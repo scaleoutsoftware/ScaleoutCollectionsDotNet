@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Scaleout.Collections</AssemblyName>
+    <RootNamespace>Scaleout.Collections</RootNamespace>
+    <Authors>scaleoutsoftware</Authors>
+    <Copyright>Copyright © 2018 by ScaleOut Software, Inc.</Copyright>
+    <Company>ScaleOut Software, Inc.</Company>
+    <Description>A set of collections provided by ScaleOut Software</Description>
+  </PropertyGroup>
+
+</Project>
