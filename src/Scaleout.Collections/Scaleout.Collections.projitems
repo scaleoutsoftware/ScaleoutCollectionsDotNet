@@ -9,6 +9,7 @@
     <Import_RootNamespace>Scaleout.Collections</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Primes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RouletteDictionary.cs" />
   </ItemGroup>
 </Project>
