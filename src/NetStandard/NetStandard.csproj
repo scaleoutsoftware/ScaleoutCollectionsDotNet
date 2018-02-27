@@ -8,6 +8,8 @@
     <Copyright>Copyright © 2018 by ScaleOut Software, Inc.</Copyright>
     <Company>ScaleOut Software, Inc.</Company>
     <Description>A set of collections provided by ScaleOut Software</Description>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Scaleout.Collections.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
 </Project>

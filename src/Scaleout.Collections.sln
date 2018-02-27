@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Scaleout.Collections", "Scaleout.Collections\Scaleout.Collections.shproj", "{B5CE2162-E039-4068-853C-E690F740DEF5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetFramework", "NetFramework\NetFramework.csproj", "{4E560F0F-0531-4687-ABB6-2B4CE7FD5A03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetStandard", "NetStandard\NetStandard.csproj", "{8FAA6395-8A7F-40DF-953F-6E9EE4B71677}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetStandard", "NetStandard\NetStandard.csproj", "{8FAA6395-8A7F-40DF-953F-6E9EE4B71677}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{7633AC7E-CB62-42AE-8D11-58952A400203}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -27,6 +29,10 @@ Global
 		{8FAA6395-8A7F-40DF-953F-6E9EE4B71677}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FAA6395-8A7F-40DF-953F-6E9EE4B71677}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FAA6395-8A7F-40DF-953F-6E9EE4B71677}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7633AC7E-CB62-42AE-8D11-58952A400203}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7633AC7E-CB62-42AE-8D11-58952A400203}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7633AC7E-CB62-42AE-8D11-58952A400203}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7633AC7E-CB62-42AE-8D11-58952A400203}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
