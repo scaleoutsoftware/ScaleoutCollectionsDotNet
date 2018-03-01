@@ -27,6 +27,28 @@ namespace UnitTests
         }
 
         [Fact]
+        public void UpdateItem()
+        {
+            var rd = new RouletteDictionary<string, int>();
+
+            for (int i = 0; i < 10; i++)
+                rd[i.ToString()] = i;
+
+            rd["5"] = 42;
+            Assert.Equal(42, rd["5"]);
+            Assert.Equal(3, rd["3"]);
+        }
+
+        [Fact]
+        public void BadAdd()
+        {
+            var rd = new RouletteDictionary<int, int>();
+            rd.Add(42, 42);
+            // Can't add when key already exists:
+            Assert.Throws<ArgumentException>(() => rd.Add(42, 123));
+        }
+
+        [Fact]
         public void OneItemBigCapacity()
         {
             var rd = new RouletteDictionary<string, string>(100_000);
@@ -62,5 +84,153 @@ namespace UnitTests
                 Assert.Equal(i, rd[i.ToString()]);
             }
         }
-    }
+
+        
+
+        [Fact]
+        public void Remove()
+        {
+            var rd = new RouletteDictionary<string, int>();
+
+            for (int i = 0; i < 10; i++)
+            {
+                rd[i.ToString()] = i;
+            }
+            Assert.Equal(10, rd.Count);
+
+            // remove evens.
+            for (int i = 0; i < 10; i += 2)
+            {
+                rd.Remove(i.ToString());
+            }
+            Assert.Equal(5, rd.Count);
+
+            for (int i = 0; i < 10; i++)
+            {
+                bool found = rd.TryGetValue(i.ToString(), out int ret);
+                if (i % 2 == 0)
+                {
+                    Assert.False(found);
+                }
+                else
+                {
+                    Assert.True(found);
+                    Assert.Equal(i, ret);
+                }
+            }
+        }
+
+        [Fact]
+        public void RemoveAddAgain()
+        {
+            var rd = new RouletteDictionary<string, int>();
+
+            for (int i = 0; i < 10; i++)
+            {
+                rd[i.ToString()] = i;
+            }
+            
+            rd.Remove("7");
+
+            Assert.Equal(9, rd.Count);
+            Assert.False(rd.ContainsKey("7"));
+            Assert.True(rd.ContainsKey("8"));
+
+            // put it back in, make sure everything's still ok:
+            rd["7"] = 7;
+
+            Assert.Equal(10, rd.Count);
+            for (int i = 0; i < 10; i++)
+            {
+                Assert.Equal(i, rd[i.ToString()]);
+            }
+        }
+
+        [Fact]
+        public void RemoveAndResize()
+        {
+            var rd = new RouletteDictionary<string, int>();
+
+            // Add first 500.
+            for (int i = 0; i < 500; i++)
+                rd.Add(i.ToString(), i);
+
+            // remove everything divisible by 7
+            for (int i = 0; i < 500; i += 7)
+            {
+                bool removed = rd.Remove(i.ToString());
+                Assert.True(removed);
+            }
+
+            // Add 2000 more elements to force resizing.
+            for (int i = 500; i < 2500; i++)
+                rd.Add(i.ToString(), i);
+
+            for (int i = 0; i < 2500; i++)
+            {
+                bool found = rd.TryGetValue(i.ToString(), out int ret);
+                if ((i < 500) && (i % 7 == 0))
+                {
+                    Assert.False(found);
+                }
+                else
+                {
+                    Assert.True(found);
+                    Assert.Equal(i, ret);
+                }
+            }
+        }
+
+        [Fact]
+        public void RemoveMissing()
+        {
+            var rd = new RouletteDictionary<string, int>();
+
+            for (int i = 0; i < 10; i++)
+                rd.Add(i.ToString(), i);
+
+            Assert.False(rd.Remove("12345"));
+        }
+
+        [Fact]
+        public void CheckEnumerator()
+        {
+            var rd = new RouletteDictionary<string, int>();
+
+            for (int i = 0; i < 10; i++)
+                rd.Add(i.ToString(), i);
+
+            bool removed = rd.Remove("9");
+            Assert.True(removed);
+
+            int counter = 0;
+            foreach (var kvp in rd)
+            {
+                Assert.True(kvp.Value < 9);
+                counter++;
+            }
+
+            Assert.Equal(9, counter);
+
+        }
+
+        [Fact]
+        public void EnumerateEmpty()
+        {
+            var rd = new RouletteDictionary<string, int>();
+
+            for (int i = 0; i < 10; i++)
+                rd.Add(i.ToString(), i);
+
+            rd.Clear();
+            Assert.Empty(rd);
+
+            foreach (var kvp in rd)
+            {
+                Assert.True(false, "shouldn't ever get here");
+            }
+        }
+
+
+    } // class
 }
