@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Scaleout.Collections
 {
+    [DebuggerDisplay("Count = {Count}")]
+    [Serializable]
     public class RouletteDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
         private int _count = 0;
