@@ -14,6 +14,10 @@ namespace Scaleout.Collections
         private int _count = 0;
         IEqualityComparer<TKey> _comparer;
 
+        // Cached references to collections returned by Keys and Values properties.
+        private KeyCollection _keys = null;
+        private ValueCollection _values = null;
+
         private struct Bucket
         {
             public int HashCode;
@@ -35,7 +39,7 @@ namespace Scaleout.Collections
 
         public int Count => _count;
 
-        public bool IsReadOnly => false;
+        bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
         public RouletteDictionary(int capacity = 1, IEqualityComparer<TKey> comparer = null)
         {
@@ -239,9 +243,27 @@ namespace Scaleout.Collections
             _buckets = newBuckets;
         }
 
-        public ICollection<TKey> Keys => throw new NotImplementedException();
+        public ICollection<TKey> Keys
+        {
+            get
+            {
+                if (_keys == null)
+                    _keys = new KeyCollection(this);
 
-        public ICollection<TValue> Values => throw new NotImplementedException();
+                return _keys;
+            }
+        }
+
+        public ICollection<TValue> Values
+        {
+            get
+            {
+                if (_values == null)
+                    _values = new ValueCollection(this);
+
+                return _values;
+            }
+        }
 
         public void Add(TKey key, TValue value)
         {
@@ -280,6 +302,30 @@ namespace Scaleout.Collections
             return FindKey(key) >= 0;
         }
 
+        public bool ContainsValue(TValue value)
+        {
+            if (value == null)
+            {
+                for (int i = 0; i < _count; i++)
+                {
+                    if (!_buckets[i].IsTombstone && _buckets[i].IsOccupied &&
+                        _buckets[i].HashCode >= 0 && _buckets[i].Value == null)
+                        return true;
+                }
+            }
+            else
+            {
+                var comparer = EqualityComparer<TValue>.Default;
+                for (int i = 0; i < _count; i++)
+                {
+                    if (!_buckets[i].IsTombstone && _buckets[i].IsOccupied &&
+                        _buckets[i].HashCode >= 0 && comparer.Equals(_buckets[i].Value, value))
+                        return true;
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// Copies the elements of the dictionary to an array of KeyValuePair elements, starting at the specified array index.
         /// </summary>
@@ -296,13 +342,12 @@ namespace Scaleout.Collections
             if ((array.Length - arrayIndex) < _count)
                 throw new ArgumentOutOfRangeException("The number of elements in the source dictionary is greater than the available space from arrayIndex to the end of the destination array.");
 
-            int destIndex = 0;
             for (int i = 0; i < _buckets.Length; i++)
             {
                 if (_buckets[i].IsOccupied && !_buckets[i].IsTombstone)
                 {
-                    array[destIndex] = new KeyValuePair<TKey, TValue>(_buckets[i].Key, _buckets[i].Value);
-                    destIndex++;
+                    array[arrayIndex] = new KeyValuePair<TKey, TValue>(_buckets[i].Key, _buckets[i].Value);
+                    arrayIndex++;
                 }
             }
 
@@ -387,5 +432,162 @@ namespace Scaleout.Collections
         {
             return GetEnumerator();
         }
+
+        public class KeyCollection : ICollection<TKey>, IEnumerable<TKey>, IReadOnlyCollection<TKey>
+        {
+            private RouletteDictionary<TKey, TValue> _dict;
+
+            public KeyCollection(RouletteDictionary<TKey, TValue> dictionary)
+            {
+                _dict = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
+            }
+            public int Count => _dict.Count;
+
+            bool ICollection<TKey>.IsReadOnly => true;
+
+            void ICollection<TKey>.Add(TKey item)
+            {
+                throw new NotSupportedException("Key collection is read-only.");
+            }
+
+            void ICollection<TKey>.Clear()
+            {
+                throw new NotSupportedException("Key collection is read-only.");
+            }
+
+            bool ICollection<TKey>.Contains(TKey item)
+            {
+                return _dict.ContainsKey(item);
+            }
+
+            public void CopyTo(TKey[] array, int arrayIndex)
+            {
+                if (array == null) throw new ArgumentNullException(nameof(array));
+
+                if (arrayIndex < 0 || arrayIndex > array.Length)
+                    throw new ArgumentOutOfRangeException(nameof(arrayIndex), arrayIndex, "index is outside the bounds of the array");
+
+                if ((array.Length - arrayIndex) < _dict.Count)
+                    throw new ArgumentException("The number of elements in the source collection is greater than the available space from arrayIndex to the end of the destination array.");
+
+                var buckets = _dict._buckets;
+                for (int i = 0; i < buckets.Length; i++)
+                {
+                    if (buckets[i].IsOccupied && !buckets[i].IsTombstone)
+                    {
+                        array[arrayIndex] = buckets[i].Key;
+                        arrayIndex++;
+                    }
+                }
+            }
+
+            public IEnumerator<TKey> GetEnumerator()
+            {
+                if (_dict._count == 0)
+                    yield break;
+                else
+                {
+                    var buckets = _dict._buckets;
+                    for (int i = 0; i < buckets.Length; i++)
+                    {
+                        if (buckets[i].IsOccupied && !buckets[i].IsTombstone)
+                        {
+                            yield return buckets[i].Key;
+                        }
+                    }
+                }
+
+            }
+
+            bool ICollection<TKey>.Remove(TKey item)
+            {
+                throw new NotSupportedException("Key collection is read-only.");
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+        } // end KeyCollection
+
+
+        public class ValueCollection : ICollection<TValue>, IEnumerable<TValue>, IReadOnlyCollection<TValue>
+        {
+            private RouletteDictionary<TKey, TValue> _dict;
+
+            public ValueCollection(RouletteDictionary<TKey, TValue> dictionary)
+            {
+                _dict = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
+            }
+            public int Count => _dict.Count;
+
+            bool ICollection<TValue>.IsReadOnly => true;
+
+            void ICollection<TValue>.Add(TValue item)
+            {
+                throw new NotSupportedException("Value collection is read-only.");
+            }
+
+            void ICollection<TValue>.Clear()
+            {
+                throw new NotSupportedException("Value collection is read-only.");
+            }
+
+            bool ICollection<TValue>.Contains(TValue item)
+            {
+                return _dict.ContainsValue(item);
+            }
+
+            void ICollection<TValue>.CopyTo(TValue[] array, int arrayIndex)
+            {
+                if (array == null) throw new ArgumentNullException(nameof(array));
+
+                if (arrayIndex < 0 || arrayIndex > array.Length)
+                    throw new ArgumentOutOfRangeException(nameof(arrayIndex), arrayIndex, "index is outside the bounds of the array");
+
+                if ((array.Length - arrayIndex) < _dict.Count)
+                    throw new ArgumentException("The number of elements in the source collection is greater than the available space from arrayIndex to the end of the destination array.");
+
+                var buckets = _dict._buckets;
+                for (int i = 0; i < buckets.Length; i++)
+                {
+                    if (buckets[i].IsOccupied && !buckets[i].IsTombstone)
+                    {
+                        array[arrayIndex] = buckets[i].Value;
+                        arrayIndex++;
+                    }
+                }
+            }
+
+            public IEnumerator<TValue> GetEnumerator()
+            {
+                if (_dict._count == 0)
+                    yield break;
+                else
+                {
+                    var buckets = _dict._buckets;
+                    for (int i = 0; i < buckets.Length; i++)
+                    {
+                        if (buckets[i].IsOccupied && !buckets[i].IsTombstone)
+                        {
+                            yield return buckets[i].Value;
+                        }
+                    }
+                }
+
+            }
+
+            bool ICollection<TValue>.Remove(TValue item)
+            {
+                throw new NotSupportedException("Value collection is read-only.");
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+        } // end ValueCollection
+
+
     }
 }

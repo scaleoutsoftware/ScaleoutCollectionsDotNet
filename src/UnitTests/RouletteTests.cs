@@ -231,6 +231,52 @@ namespace UnitTests
             }
         }
 
+        [Fact]
+        public void EnumerateKeys()
+        {
+            var rd = new RouletteDictionary<int, int>();
+            for (int i = 0; i < 100; i++)
+                rd.Add(i, i);
+
+            // remove the last item to exercise tombstones.
+            rd.Remove(99);
+
+            bool[] returnedKeys = new bool[99];
+            foreach (var key in rd.Keys)
+            {
+                Assert.False(returnedKeys[key], "key was returned twice from enumerator");
+                returnedKeys[key] = true;
+            }
+
+            foreach (bool found in returnedKeys)
+            {
+                Assert.True(found, "a key was not returned");
+            }
+        }
+
+        [Fact]
+        public void EnumerateValues()
+        {
+            var rd = new RouletteDictionary<int, int>();
+            for (int i = 0; i < 100; i++)
+                rd.Add(i, i);
+
+            // remove the last item to exercise tombstones.
+            rd.Remove(99);
+
+            bool[] returnedVals = new bool[99];
+            foreach (var val in rd.Values)
+            {
+                Assert.False(returnedVals[val], "value was returned twice from enumerator");
+                returnedVals[val] = true;
+            }
+
+            foreach (bool found in returnedVals)
+            {
+                Assert.True(found, "a value was not returned");
+            }
+        }
+
 
     } // class
 }
