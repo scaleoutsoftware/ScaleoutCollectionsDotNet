@@ -83,7 +83,7 @@ namespace Scaleout.Collections
             int indexOfFirstTombstone = -1;
             int probeCount = 0;
 
-            while (probeCount <= _buckets.Length)
+            while (true)
             {
                 if (_buckets[probeIndex].IsTombstone)
                 {
@@ -149,7 +149,7 @@ namespace Scaleout.Collections
             int probeIndex = bucketIndex;
             int probeCount = 0;
 
-            while (probeCount <= _buckets.Length)
+            while (true)
             {
                 if (_buckets[probeIndex].IsTombstone)
                 {
@@ -178,7 +178,7 @@ namespace Scaleout.Collections
                     continue;
                 }
             }
-            throw new ApplicationException("too many probes");
+
         }
 
         public TValue this[TKey key]
@@ -212,9 +212,6 @@ namespace Scaleout.Collections
                 int probeCount = 0;
                 while (true)
                 {
-                    if (probeCount == newBuckets.Length)
-                        throw new ApplicationException("too many probes");
-
                     if (!newBuckets[probeIndex].IsOccupied)
                     {
                         newBuckets[probeIndex].HashCode = _buckets[i].HashCode;
