@@ -86,9 +86,7 @@ namespace Scaleout.Collections
 
                     // need to probe again.
                     probeCount++;
-                    probeIndex = bucketIndex + (probeCount * probeCount);
-                    if (probeIndex >= _buckets.Length)
-                        probeIndex = probeIndex % _buckets.Length;
+                    probeIndex = (bucketIndex + (probeCount * probeCount)) % _buckets.Length;
                     continue;
                 }
 
@@ -126,9 +124,7 @@ namespace Scaleout.Collections
                 {
                     // collision, probe again.
                     probeCount++;
-                    probeIndex = bucketIndex + (probeCount * probeCount);
-                    if (probeIndex >= _buckets.Length)
-                        probeIndex = probeIndex % _buckets.Length;
+                    probeIndex = (bucketIndex + (probeCount * probeCount)) % _buckets.Length;
                     continue;
                 }
             }
@@ -155,9 +151,7 @@ namespace Scaleout.Collections
                 {
                     // need to probe again.
                     probeCount++;
-                    probeIndex = bucketIndex + (probeCount * probeCount);
-                    if (probeIndex >= _buckets.Length)
-                        probeIndex = probeIndex % _buckets.Length;
+                    probeIndex = (bucketIndex + (probeCount * probeCount)) % _buckets.Length;
                     continue;
                 }
 
@@ -176,9 +170,7 @@ namespace Scaleout.Collections
                 {
                     // collision, probe again.
                     probeCount++;
-                    probeIndex = bucketIndex + (probeCount * probeCount);
-                    if (probeIndex >= _buckets.Length)
-                        probeIndex = probeIndex % _buckets.Length;
+                    probeIndex = (bucketIndex + (probeCount * probeCount)) % _buckets.Length;
                     continue;
                 }
             }
@@ -232,9 +224,7 @@ namespace Scaleout.Collections
                     {
                         // collision. probe again.
                         probeCount++;
-                        probeIndex = bucketIndex + (probeCount * probeCount);
-                        if (probeIndex >= newBuckets.Length)
-                            probeIndex = probeIndex % newBuckets.Length;
+                        probeIndex = (bucketIndex + (probeCount * probeCount)) % newBuckets.Length;
                     }
 
                 }
