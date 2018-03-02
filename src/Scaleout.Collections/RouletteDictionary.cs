@@ -49,12 +49,21 @@ namespace Scaleout.Collections
         public RouletteDictionary(int capacity = 1, IEqualityComparer<TKey> comparer = null)
         {
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
-
-            // we keep the load factor below .75, so add some wiggle room to the requested
-            // capacity to prevent resize operations
-            int actualCapacity = Primes.Next((int)(capacity * 1.5));
-            _maxCountBeforeResize = (int)(actualCapacity * MaxLoadFactor);
-            _buckets = new Bucket[actualCapacity];
+            
+            int initialBucketCount;
+            if (capacity < 5)
+            {
+                initialBucketCount = 5;
+                _maxCountBeforeResize = 3;
+            }
+            else
+            {
+                // we keep the load factor below .75, so add some wiggle room to the requested
+                // capacity to prevent resize operations
+                initialBucketCount = Primes.Next((int)(capacity * 1.5));
+                _maxCountBeforeResize = (int)(initialBucketCount * MaxLoadFactor);
+            }
+            _buckets = new Bucket[initialBucketCount];
         }
 
 
