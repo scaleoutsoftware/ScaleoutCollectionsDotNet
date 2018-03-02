@@ -11,7 +11,12 @@ namespace Scaleout.Collections
     [Serializable]
     public class RouletteDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
+        private const float MaxLoadFactor = 0.75f;
+
         private int _count = 0;
+        // Max count, inclusive, before resize.
+        private int _maxCountBeforeResize;
+
         IEqualityComparer<TKey> _comparer;
 
         // Cached references to collections returned by Keys and Values properties.
@@ -45,14 +50,12 @@ namespace Scaleout.Collections
         {
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
 
-            // we keep the load factor below .7, so add some wiggle room to the requested
+            // we keep the load factor below .75, so add some wiggle room to the requested
             // capacity to prevent resize operations
             int actualCapacity = Primes.Next((int)(capacity * 1.5));
+            _maxCountBeforeResize = (int)(actualCapacity * MaxLoadFactor);
             _buckets = new Bucket[actualCapacity];
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float LoadFactor() { return (float)_count / _buckets.Length; }
 
 
         /// <summary>
@@ -60,15 +63,18 @@ namespace Scaleout.Collections
         /// </summary>
         /// <param name="key">Key associated with the value.</param>
         /// <param name="value">New value.</param>
-        /// <param name="canUpdate">
+        /// <param name="updateAllowed">
         /// Whether an existing element with the same key may be updated.
         /// If false, an ArgumentException is thrown if an item with the same
         /// key alread exists.
         /// </param>
-        private void Set(TKey key, TValue value, bool canUpdate)
+        private void Set(TKey key, TValue value, bool updateAllowed)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
+
+            if (_count >= _maxCountBeforeResize)
+                Resize();
 
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
             int bucketIndex = hashcode % _buckets.Length;
@@ -105,15 +111,13 @@ namespace Scaleout.Collections
                     _buckets[probeIndex].IsTombstone = false;
                     _buckets[probeIndex].IsOccupied = true;
 
-                    if (LoadFactor() > 0.7)
-                        Resize();
                     return;
                 }
 
                 if (hashcode == _buckets[probeIndex].HashCode && _comparer.Equals(key, _buckets[probeIndex].Key))
                 {
                     // found the entry, set new value
-                    if (canUpdate)
+                    if (updateAllowed)
                         _buckets[probeIndex].Value = value;
                     else
                         throw new ArgumentException("An element with the same key already exists in the dictionary.", nameof(key));
@@ -190,7 +194,7 @@ namespace Scaleout.Collections
 
             set
             {
-                Set(key, value, canUpdate: true);
+                Set(key, value, updateAllowed: true);
             }
         }
 
@@ -231,6 +235,7 @@ namespace Scaleout.Collections
             }
 
             _buckets = newBuckets;
+            _maxCountBeforeResize = (int)(newBuckets.Length * MaxLoadFactor);
         }
 
         public ICollection<TKey> Keys
@@ -257,12 +262,12 @@ namespace Scaleout.Collections
 
         public void Add(TKey key, TValue value)
         {
-            Set(key, value, canUpdate: false);
+            Set(key, value, updateAllowed: false);
         }
 
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
         {
-            Set(item.Key, item.Value, canUpdate: false);
+            Set(item.Key, item.Value, updateAllowed: false);
         }
 
         /// <summary>
