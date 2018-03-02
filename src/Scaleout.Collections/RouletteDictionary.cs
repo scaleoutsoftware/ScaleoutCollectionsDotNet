@@ -51,7 +51,7 @@ namespace Scaleout.Collections
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
             
             int initialBucketCount;
-            if (capacity < 5)
+            if (capacity <= 3)
             {
                 initialBucketCount = 5;
                 _maxCountBeforeResize = 3;
