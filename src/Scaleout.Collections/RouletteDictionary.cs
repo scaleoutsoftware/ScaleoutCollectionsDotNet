@@ -209,7 +209,7 @@ namespace Scaleout.Collections
 
         private void Resize()
         {
-            var newBuckets = new Bucket[Primes.Next((_count * 2) + 1)];
+            var newBuckets = new Bucket[Primes.Next((_buckets.Length * 2) + 1)];
 
             for (int i = 0; i < _buckets.Length; i++)
             {
