@@ -341,7 +341,7 @@ namespace Scaleout.Collections
         {
             if (value == null)
             {
-                for (int i = 0; i < _count; i++)
+                for (int i = 0; i < _buckets.Length; i++)
                 {
                     if (_buckets[i].HashCode > Unoccupied && _buckets[i].Value == null)
                         return true;
@@ -350,7 +350,7 @@ namespace Scaleout.Collections
             else
             {
                 var comparer = EqualityComparer<TValue>.Default;
-                for (int i = 0; i < _count; i++)
+                for (int i = 0; i < _buckets.Length; i++)
                 {
                     if (_buckets[i].HashCode > Unoccupied && comparer.Equals(_buckets[i].Value, value))
                         return true;

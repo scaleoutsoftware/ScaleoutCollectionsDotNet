@@ -277,6 +277,22 @@ namespace UnitTests
             }
         }
 
+        [Fact]
+        public void ContainsValue()
+        {
+            var rd = new RouletteDictionary<string, int>();
+            for (int i = 0; i < 100; i++)
+                rd.Add(i.ToString(), i);
+
+            // remove something to exercise tombstones.
+            rd.Remove("42");
+
+            Assert.True(rd.ContainsValue(66));
+            Assert.True(rd.Values.Contains(88));
+            Assert.False(rd.ContainsValue(42));
+            Assert.False(rd.ContainsValue(543434));
+        }
+
 
     } // class
 }
