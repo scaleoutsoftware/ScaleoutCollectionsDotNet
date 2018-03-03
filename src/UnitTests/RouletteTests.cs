@@ -293,6 +293,26 @@ namespace UnitTests
             Assert.False(rd.ContainsValue(543434));
         }
 
+        [Fact]
+        public void Trim()
+        {
+            var rd = new RouletteDictionary<string, int>();
+            for (int i = 0; i < 1234; i++)
+                rd[i.ToString()] = i;
+
+            int initialCap = rd.Capacity;
+            Assert.True(initialCap > 1234);
+
+            rd.Trim();
+            Assert.True(rd.Capacity < initialCap);
+            Assert.Equal(500, rd["500"]);
+
+
+            rd.Clear();
+            rd.Trim();
+            Assert.Equal(5, rd.Capacity);
+
+        }
 
     } // class
 }

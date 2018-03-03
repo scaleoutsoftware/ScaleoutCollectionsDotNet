@@ -48,8 +48,9 @@ namespace Scaleout.Collections
 
         Bucket[] _buckets;
         
-
         public int Count => _count;
+
+        internal int Capacity => _buckets.Length;
 
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
@@ -90,7 +91,7 @@ namespace Scaleout.Collections
                 throw new ArgumentNullException(nameof(key));
 
             if (_count >= _maxCountBeforeResize)
-                Resize();
+                Resize(Primes.Next((_buckets.Length * 2) + 1));
 
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
             if (hashcode == 0) hashcode = 1;
@@ -243,9 +244,14 @@ namespace Scaleout.Collections
             }
         }
 
-        private void Resize()
+        /// <summary>
+        /// Resizes the collection. Requested size must be prime or
+        /// behavior is undefined.
+        /// </summary>
+        /// <param name="newSize"></param>
+        private void Resize(int newSize)
         {
-            var newBuckets = new Bucket[Primes.Next((_buckets.Length * 2) + 1)];
+            var newBuckets = new Bucket[newSize];
 
             for (int i = 0; i < _buckets.Length; i++)
             {
@@ -276,6 +282,21 @@ namespace Scaleout.Collections
 
             _buckets = newBuckets;
             _maxCountBeforeResize = (int)(newBuckets.Length * MaxLoadFactor);
+        }
+
+        /// <summary>
+        /// Trims excess capactiy from the dictionary.
+        /// </summary>
+        public void Trim()
+        {
+            // we keep the load factor a bit below .75 to keep
+            // probing from killing performance.
+            int newCapacity;
+            if (_count <= 3)
+                newCapacity = 5;
+            else
+                newCapacity = Primes.Next((int)(_count * 1.5));
+            Resize(newCapacity);
         }
 
         public ICollection<TKey> Keys
