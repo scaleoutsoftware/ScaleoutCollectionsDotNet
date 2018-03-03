@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -14,6 +15,11 @@ namespace Scaleout.Collections
         private const float MaxLoadFactor = 0.75f;
         private const int Unoccupied = 0;
         private const int Tombstone = -1;
+
+        // People are used to doing unsynchronized reads on a dictionary, but that
+        // would break System.Random. We hold it in thread local storage to protect it.
+        private static ThreadLocal<Random> _tlsRand = new ThreadLocal<Random>(() => new Random(Seed: Thread.CurrentThread.ManagedThreadId));
+
 
         private int _count = 0;
         // Max count, inclusive, before resize.
@@ -41,6 +47,7 @@ namespace Scaleout.Collections
         }
 
         Bucket[] _buckets;
+        
 
         public int Count => _count;
 
@@ -189,6 +196,35 @@ namespace Scaleout.Collections
             }
 
         }
+
+        /// <summary>
+        /// Picks a random, occupied bucket.
+        /// </summary>
+        /// <returns>Index of a bucket, or -1 if the dictionary is empty.</returns>
+        private int FindRandomOccupied()
+        {
+            if (_count == 0)
+                return -1;
+
+            int probeIndex = _tlsRand.Value.Next(_buckets.Length);
+            // probe forward if even, backwards if odd.
+            int probeIncrement = (probeIndex & 1) == 0 ? 1 : -1;
+
+            while (true)
+            {
+                if (_buckets[probeIndex].HashCode > Unoccupied)
+                    return probeIndex;
+                else
+                {
+                    probeIndex += probeIncrement;
+                    if (probeIndex < 0)
+                        probeIndex = _buckets.Length - 1;
+                    else if (probeIndex == _buckets.Length)
+                        probeIndex = 0;
+                }
+            }
+        }
+
 
         public TValue this[TKey key]
         {
@@ -386,6 +422,73 @@ namespace Scaleout.Collections
             }
             else
                 return false;
+        }
+
+        /// <summary>
+        /// Removes a random entry from the dictionary.
+        /// </summary>
+        /// <returns>true if an element; otherwise, false. This method returns false if the dictionary is empty.</returns>
+        public bool RemoveRandom()
+        {
+            int bucketIndex = FindRandomOccupied();
+            if (bucketIndex >= 0)
+            {
+                _buckets[bucketIndex].HashCode = Tombstone;
+                _buckets[bucketIndex].Key = default(TKey);
+                _buckets[bucketIndex].Value = default(TValue);
+                _count--;
+                return true;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Removes a random entry from the dictionary, returning the removed
+        /// entry as a KeyValuePair.
+        /// </summary>
+        /// <returns>A KeyValuePair containing the removed entry.</returns>
+        public KeyValuePair<TKey, TValue> RemoveRandomAndGet()
+        {
+            int bucketIndex = FindRandomOccupied();
+            if (bucketIndex >= 0)
+            {
+                var kvp = new KeyValuePair<TKey, TValue>(_buckets[bucketIndex].Key, _buckets[bucketIndex].Value);
+                _buckets[bucketIndex].HashCode = Tombstone;
+                _buckets[bucketIndex].Key = default(TKey);
+                _buckets[bucketIndex].Value = default(TValue);
+                _count--;
+                return kvp;
+            }
+            else
+                throw new InvalidOperationException("Dictionary is empty.");
+        }
+
+        public TValue GetRandomValue()
+        {
+            int bucketIndex = FindRandomOccupied();
+            if (bucketIndex >= 0)
+                return _buckets[bucketIndex].Value;
+            else
+                throw new InvalidOperationException("Dictionary is empty.");
+        }
+
+        public TKey GetRandomKey()
+        {
+            int bucketIndex = FindRandomOccupied();
+            if (bucketIndex >= 0)
+                return _buckets[bucketIndex].Key;
+            else
+                throw new InvalidOperationException("Dictionary is empty.");
+        }
+
+        public KeyValuePair<TKey,TValue> GetRandomKeyAndValue()
+        {
+            int bucketIndex = FindRandomOccupied();
+            if (bucketIndex >= 0)
+                return new KeyValuePair<TKey, TValue>(_buckets[bucketIndex].Key, _buckets[bucketIndex].Value);
+            else
+                throw new InvalidOperationException("Dictionary is empty.");
         }
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
