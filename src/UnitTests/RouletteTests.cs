@@ -314,5 +314,47 @@ namespace UnitTests
 
         }
 
+        public class BadHasher : IEqualityComparer<string>
+        {
+            public bool Equals(string x, string y)
+            {
+                return string.Equals(x, y, StringComparison.Ordinal);
+            }
+
+            public int GetHashCode(string obj)
+            {
+                return 0;
+            }
+        }
+
+        [Fact]
+        public void ZeroHash()
+        {
+            // Check hashcode of 0, which is a special case.
+            var rd = new RouletteDictionary<string, string>(100, new BadHasher());
+            rd.Add("foo", "bar");
+            Assert.Equal("bar", rd["foo"]);
+            Assert.True(rd.Remove("foo"));
+        }
+
+        [Fact]
+        public void LotsOfCollisions()
+        {
+            // Make sure the dictionary still works, even when there are lots of collisions
+            var rd = new RouletteDictionary<string, int>(comparer: new BadHasher());
+
+            for (int i = 0; i < 1_000; i++)
+                rd[i.ToString()] = i;
+
+            Assert.Equal(1_000, rd.Count);
+
+            for (int i = 0; i < 1_000; i++)
+            {
+                Assert.Equal(i, rd[i.ToString()]);
+            }
+        }
+
+
+
     } // class
 }

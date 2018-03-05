@@ -162,6 +162,7 @@ namespace Scaleout.Collections
                 throw new ArgumentNullException(nameof(key));
 
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
+            if (hashcode == 0) hashcode = 1;
             int bucketIndex = hashcode % _buckets.Length;
             int probeIndex = bucketIndex;
             int probeCount = 0;
