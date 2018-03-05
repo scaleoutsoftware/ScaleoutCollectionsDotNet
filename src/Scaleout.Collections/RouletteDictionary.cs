@@ -8,6 +8,9 @@ using System.Text;
 
 namespace Scaleout.Collections
 {
+    // TODO: Serialization
+    // TODO: Condition for random read/remove
+
     [DebuggerDisplay("Count = {Count}")]
     [Serializable]
     public class RouletteDictionary<TKey, TValue> : IDictionary<TKey, TValue>
