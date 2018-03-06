@@ -19,11 +19,6 @@ namespace Scaleout.Collections
         private const int Unoccupied = 0;
         private const int Tombstone = -1;
 
-        // People are used to doing unsynchronized reads on a dictionary, but that
-        // would break System.Random. We hold it in thread local storage to protect it.
-        private static ThreadLocal<Random> _tlsRand = new ThreadLocal<Random>(() => new Random(Seed: Thread.CurrentThread.ManagedThreadId));
-
-
         private int _count = 0;
         // Max count, inclusive, before resize.
         private int _maxCountBeforeResize;
@@ -236,7 +231,7 @@ namespace Scaleout.Collections
             if (_count == 0)
                 return -1;
 
-            int probeIndex = _tlsRand.Value.Next(_buckets.Length);
+            int probeIndex = TlsRandom.Next(_buckets.Length);
             // probe forward if even, backwards if odd.
             int probeIncrement = (probeIndex & 1) == 0 ? 1 : -1;
 

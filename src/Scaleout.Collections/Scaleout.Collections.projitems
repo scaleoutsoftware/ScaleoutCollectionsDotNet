@@ -11,5 +11,6 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Primes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RouletteDictionary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TlsRandom.cs" />
   </ItemGroup>
 </Project>
