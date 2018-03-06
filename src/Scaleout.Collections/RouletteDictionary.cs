@@ -55,6 +55,9 @@ namespace Scaleout.Collections
 
         internal int Capacity => _buckets.Length;
 
+        // Default predicate we use when the user doesn't supply one.
+        private static bool AlwaysTrue(TValue value) => true;
+
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
         public RouletteDictionary(int capacity = 1, IEqualityComparer<TKey> comparer = null)
@@ -224,10 +227,11 @@ namespace Scaleout.Collections
         }
 
         /// <summary>
-        /// Picks a random, occupied bucket.
+        /// Picks a random, occupied bucket that satisfies a condition.
         /// </summary>
-        /// <returns>Index of a bucket, or -1 if the dictionary is empty.</returns>
-        private int FindRandomOccupied()
+        /// <param name="predicate">A function to test each value for a condition, or null.</param>
+        /// <returns>Index of a bucket, -1 if the dictionary is empty, -2 if no elements satisfy the predicate.</returns>
+        private int FindRandomOccupied(Func<TValue, bool> predicate)
         {
             if (_count == 0)
                 return -1;
@@ -236,9 +240,11 @@ namespace Scaleout.Collections
             // probe forward if even, backwards if odd.
             int probeIncrement = (probeIndex & 1) == 0 ? 1 : -1;
 
-            while (true)
+            int probeCount = 0;
+            while (probeCount < _buckets.Length)
             {
-                if (_buckets[probeIndex].HashCode > Unoccupied)
+                probeCount++;
+                if (_buckets[probeIndex].HashCode > Unoccupied && predicate(_buckets[probeIndex].Value))
                     return probeIndex;
                 else
                 {
@@ -249,6 +255,8 @@ namespace Scaleout.Collections
                         probeIndex = 0;
                 }
             }
+
+            return -2;
         }
 
 
@@ -482,12 +490,12 @@ namespace Scaleout.Collections
         }
 
         /// <summary>
-        /// Removes a random entry from the dictionary.
+        /// Removes a random entry from the dictionary that satisfies a condition.
         /// </summary>
-        /// <returns>true if an element; otherwise, false. This method returns false if the dictionary is empty.</returns>
-        public bool RemoveRandom()
+        /// <returns>true if an element; otherwise, false. This method returns false if the dictionary is empty or if no element satisfies the condition in predicate.</returns>
+        public bool RemoveRandom(Func<TValue, bool> predicate)
         {
-            int bucketIndex = FindRandomOccupied();
+            int bucketIndex = FindRandomOccupied(predicate);
             if (bucketIndex >= 0)
             {
                 _buckets[bucketIndex].HashCode = Tombstone;
@@ -501,13 +509,13 @@ namespace Scaleout.Collections
         }
 
         /// <summary>
-        /// Removes a random entry from the dictionary, returning the removed
+        /// Removes a random entry from the dictionary that satisfies a condition, returning the removed
         /// entry as a KeyValuePair.
         /// </summary>
         /// <returns>A KeyValuePair containing the removed entry.</returns>
-        public KeyValuePair<TKey, TValue> RemoveRandomAndGet()
+        public KeyValuePair<TKey, TValue> RemoveRandomAndGet(Func<TValue, bool> predicate)
         {
-            int bucketIndex = FindRandomOccupied();
+            int bucketIndex = FindRandomOccupied(predicate);
             if (bucketIndex >= 0)
             {
                 var kvp = new KeyValuePair<TKey, TValue>(_buckets[bucketIndex].Key, _buckets[bucketIndex].Value);
@@ -517,35 +525,85 @@ namespace Scaleout.Collections
                 _count--;
                 return kvp;
             }
-            else
+            else if (bucketIndex == -1)
                 throw new InvalidOperationException("Dictionary is empty.");
+            else if (bucketIndex == -2)
+                throw new InvalidOperationException("No element satisfies the condition in predicate.");
+            else
+                throw new NotImplementedException("Unexpected negative return code.");
+        }
+
+        /// <summary>
+        /// Removes a random entry from the dictionary.
+        /// </summary>
+        /// <returns>true if an element; otherwise, false. This method returns false if the dictionary is empty.</returns>
+        public bool RemoveRandom()
+        {
+            return RemoveRandom(predicate: AlwaysTrue);
+        }
+
+        /// <summary>
+        /// Removes a random entry from the dictionary, returning the removed
+        /// entry as a KeyValuePair.
+        /// </summary>
+        /// <returns>A KeyValuePair containing the removed entry.</returns>
+        public KeyValuePair<TKey, TValue> RemoveRandomAndGet()
+        {
+            return RemoveRandomAndGet(predicate: AlwaysTrue);
+        }
+
+        public TValue GetRandomValue(Func<TValue, bool> predicate)
+        {
+            int bucketIndex = FindRandomOccupied(predicate);
+            if (bucketIndex >= 0)
+                return _buckets[bucketIndex].Value;
+            else if (bucketIndex == -1)
+                throw new InvalidOperationException("Dictionary is empty.");
+            else if (bucketIndex == -2)
+                throw new InvalidOperationException("No element satisfies the condition in predicate.");
+            else
+                throw new NotImplementedException("Unexpected negative return code.");
+        }
+
+        public TKey GetRandomKey(Func<TValue, bool> predicate)
+        {
+            int bucketIndex = FindRandomOccupied(predicate);
+            if (bucketIndex >= 0)
+                return _buckets[bucketIndex].Key;
+            else if (bucketIndex == -1)
+                throw new InvalidOperationException("Dictionary is empty.");
+            else if (bucketIndex == -2)
+                throw new InvalidOperationException("No element satisfies the condition in predicate.");
+            else
+                throw new NotImplementedException("Unexpected negative return code.");
+        }
+
+        public KeyValuePair<TKey, TValue> GetRandomKeyAndValue(Func<TValue, bool> predicate)
+        {
+            int bucketIndex = FindRandomOccupied(predicate);
+            if (bucketIndex >= 0)
+                return new KeyValuePair<TKey, TValue>(_buckets[bucketIndex].Key, _buckets[bucketIndex].Value);
+            else if (bucketIndex == -1)
+                throw new InvalidOperationException("Dictionary is empty.");
+            else if (bucketIndex == -2)
+                throw new InvalidOperationException("No element satisfies the condition in predicate.");
+            else
+                throw new NotImplementedException("Unexpected negative return code.");
         }
 
         public TValue GetRandomValue()
         {
-            int bucketIndex = FindRandomOccupied();
-            if (bucketIndex >= 0)
-                return _buckets[bucketIndex].Value;
-            else
-                throw new InvalidOperationException("Dictionary is empty.");
+            return GetRandomValue(predicate: AlwaysTrue);
         }
 
         public TKey GetRandomKey()
         {
-            int bucketIndex = FindRandomOccupied();
-            if (bucketIndex >= 0)
-                return _buckets[bucketIndex].Key;
-            else
-                throw new InvalidOperationException("Dictionary is empty.");
+            return GetRandomKey(predicate: AlwaysTrue);
         }
 
         public KeyValuePair<TKey,TValue> GetRandomKeyAndValue()
         {
-            int bucketIndex = FindRandomOccupied();
-            if (bucketIndex >= 0)
-                return new KeyValuePair<TKey, TValue>(_buckets[bucketIndex].Key, _buckets[bucketIndex].Value);
-            else
-                throw new InvalidOperationException("Dictionary is empty.");
+            return GetRandomKeyAndValue(predicate: AlwaysTrue);
         }
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
