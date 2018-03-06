@@ -12,7 +12,6 @@ namespace Scaleout.Collections
     // TODO: Condition for random read/remove
 
     [DebuggerDisplay("Count = {Count}")]
-    [Serializable]
     public class RouletteDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
         private const float MaxLoadFactor = 0.75f;
