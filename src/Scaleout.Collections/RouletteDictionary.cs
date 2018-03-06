@@ -107,6 +107,17 @@ namespace Scaleout.Collections
 
             while (true)
             {
+                if (probeCount >= (_buckets.Length / 2) + 1)
+                {
+                    // This is bad situation. We've already probed over half the buckets in the table and will start
+                    // probing the same buckets over again. We're probably dealing with a poor-quality hash function.
+                    // Performance is already trashed at this point, so we press on by changing the initial desired 
+                    // bucket and starting over.
+                    bucketIndex = ++bucketIndex % _buckets.Length;
+                    probeIndex = bucketIndex;
+                    probeCount = 0;
+                }
+
                 if (_buckets[probeIndex].HashCode == Tombstone)
                 {
                     if (indexOfFirstTombstone == -1)
@@ -154,6 +165,7 @@ namespace Scaleout.Collections
             }
         }
 
+
         /// <summary>
         /// Gets the bucket index containing the entry with the specified key, or -1 if not found.
         /// </summary>
@@ -172,6 +184,15 @@ namespace Scaleout.Collections
 
             while (true)
             {
+                if (probeCount > (_buckets.Length / 2) + 1)
+                {
+                    // Already probed over half the buckets in the table. We start the probe sequence
+                    // over again, starting with the next bucket.
+                    bucketIndex = ++bucketIndex % _buckets.Length;
+                    probeIndex = bucketIndex;
+                    probeCount = 0;
+                }
+
                 if (_buckets[probeIndex].HashCode == Tombstone)
                 {
                     // need to probe again.
@@ -267,6 +288,17 @@ namespace Scaleout.Collections
                 int probeCount = 0;
                 while (true)
                 {
+                    if (probeCount > (_buckets.Length / 2) + 1)
+                    {
+                        // This is bad situation. We've already probed over half the buckets in the table and will start
+                        // probing the same buckets over again. We're probably dealing with a poor-quality hash function.
+                        // Performance is already trashed at this point, so we press on by changing the initial desired 
+                        // bucket and starting over.
+                        bucketIndex = ++bucketIndex % _buckets.Length;
+                        probeIndex = bucketIndex;
+                        probeCount = 0;
+                    }
+
                     if (newBuckets[probeIndex].HashCode == Unoccupied)
                     {
                         newBuckets[probeIndex].HashCode = _buckets[i].HashCode;
@@ -289,7 +321,7 @@ namespace Scaleout.Collections
         }
 
         /// <summary>
-        /// Trims excess capactiy from the dictionary.
+        /// Trims excess capacity from the dictionary.
         /// </summary>
         public void Trim()
         {
