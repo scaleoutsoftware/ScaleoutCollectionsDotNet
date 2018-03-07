@@ -30,21 +30,13 @@ namespace Scaleout.Collections
 
         private struct Bucket
         {
-            public int HashCode;
             public TKey Key;
             public TValue Value;
-
-            public override string ToString()
-            {
-                if (HashCode < 1)
-                    return "{empty}";
-                else
-                    return $"[{Key}]: {Value}";
-            }
         }
 
         Bucket[] _buckets;
-        
+        int[] _hashes;
+
         public int Count => _count;
 
         internal int Capacity => _buckets.Length;
@@ -72,6 +64,7 @@ namespace Scaleout.Collections
                 _maxCountBeforeResize = (int)(initialBucketCount * MaxLoadFactor);
             }
             _buckets = new Bucket[initialBucketCount];
+            _hashes = new int[initialBucketCount];
         }
 
 
@@ -115,7 +108,7 @@ namespace Scaleout.Collections
                     probeCount = 0;
                 }
 
-                if (_buckets[probeIndex].HashCode == Tombstone)
+                if (_hashes[probeIndex] == Tombstone)
                 {
                     if (indexOfFirstTombstone == -1)
                         indexOfFirstTombstone = probeIndex;
@@ -126,7 +119,7 @@ namespace Scaleout.Collections
                     continue;
                 }
 
-                if (_buckets[probeIndex].HashCode == Unoccupied)
+                if (_hashes[probeIndex] == Unoccupied)
                 {
                     // didn't find the entry, adding new value.
                     _count++;
@@ -135,14 +128,14 @@ namespace Scaleout.Collections
                     if (indexOfFirstTombstone != -1)
                         probeIndex = indexOfFirstTombstone;
 
-                    _buckets[probeIndex].HashCode = hashcode;
+                    _hashes[probeIndex] = hashcode;
                     _buckets[probeIndex].Key = key;
                     _buckets[probeIndex].Value = value;
 
                     return;
                 }
 
-                if (hashcode == _buckets[probeIndex].HashCode && _comparer.Equals(key, _buckets[probeIndex].Key))
+                if (hashcode == _hashes[probeIndex] && _comparer.Equals(key, _buckets[probeIndex].Key))
                 {
                     // found the entry, set new value
                     if (updateAllowed)
@@ -190,7 +183,7 @@ namespace Scaleout.Collections
                     probeCount = 0;
                 }
 
-                if (_buckets[probeIndex].HashCode == Tombstone)
+                if (_hashes[probeIndex] == Tombstone)
                 {
                     // need to probe again.
                     probeCount++;
@@ -198,13 +191,13 @@ namespace Scaleout.Collections
                     continue;
                 }
 
-                if (_buckets[probeIndex].HashCode == Unoccupied)
+                if (_hashes[probeIndex] == Unoccupied)
                 {
                     // didn't find the entry
                     return -1;
                 }
 
-                if (hashcode == _buckets[probeIndex].HashCode && _comparer.Equals(key, _buckets[probeIndex].Key))
+                if (hashcode == _hashes[probeIndex] && _comparer.Equals(key, _buckets[probeIndex].Key))
                 {
                     // found the entry, return the bucket index.
                     return probeIndex;
@@ -238,7 +231,7 @@ namespace Scaleout.Collections
             while (probeCount < _buckets.Length)
             {
                 probeCount++;
-                if (_buckets[probeIndex].HashCode > Unoccupied && predicate(_buckets[probeIndex].Value))
+                if (_hashes[probeIndex] > Unoccupied && predicate(_buckets[probeIndex].Value))
                     return probeIndex;
                 else
                 {
@@ -279,13 +272,14 @@ namespace Scaleout.Collections
         private void Resize(int newSize)
         {
             var newBuckets = new Bucket[newSize];
+            var newHashes = new int[newSize];
 
             for (int i = 0; i < _buckets.Length; i++)
             {
-                if (_buckets[i].HashCode < 1)
+                if (_hashes[i] < 1)
                     continue;
 
-                int bucketIndex = _buckets[i].HashCode % newBuckets.Length;
+                int bucketIndex = _hashes[i] % newBuckets.Length;
                 int probeIndex = bucketIndex;
                 int probeCount = 0;
                 while (true)
@@ -301,9 +295,9 @@ namespace Scaleout.Collections
                         probeCount = 0;
                     }
 
-                    if (newBuckets[probeIndex].HashCode == Unoccupied)
+                    if (newHashes[probeIndex] == Unoccupied)
                     {
-                        newBuckets[probeIndex].HashCode = _buckets[i].HashCode;
+                        newHashes[probeIndex] = _hashes[i];
                         newBuckets[probeIndex].Key = _buckets[i].Key;
                         newBuckets[probeIndex].Value = _buckets[i].Value;
                         break;
@@ -319,6 +313,7 @@ namespace Scaleout.Collections
             }
 
             _buckets = newBuckets;
+            _hashes = newHashes;
             _maxCountBeforeResize = (int)(newBuckets.Length * MaxLoadFactor);
         }
 
@@ -377,6 +372,7 @@ namespace Scaleout.Collections
             if (_count > 0)
             {
                 Array.Clear(_buckets, 0, _buckets.Length);
+                Array.Clear(_hashes, 0, _hashes.Length);
                 _count = 0;
             }
         }
@@ -402,7 +398,7 @@ namespace Scaleout.Collections
             {
                 for (int i = 0; i < _buckets.Length; i++)
                 {
-                    if (_buckets[i].HashCode > Unoccupied && _buckets[i].Value == null)
+                    if (_hashes[i] > Unoccupied && _buckets[i].Value == null)
                         return true;
                 }
             }
@@ -411,7 +407,7 @@ namespace Scaleout.Collections
                 var comparer = EqualityComparer<TValue>.Default;
                 for (int i = 0; i < _buckets.Length; i++)
                 {
-                    if (_buckets[i].HashCode > Unoccupied && comparer.Equals(_buckets[i].Value, value))
+                    if (_hashes[i] > Unoccupied && comparer.Equals(_buckets[i].Value, value))
                         return true;
                 }
             }
@@ -436,7 +432,7 @@ namespace Scaleout.Collections
 
             for (int i = 0; i < _buckets.Length; i++)
             {
-                if (_buckets[i].HashCode > Unoccupied)
+                if (_hashes[i] > Unoccupied)
                 {
                     array[arrayIndex] = new KeyValuePair<TKey, TValue>(_buckets[i].Key, _buckets[i].Value);
                     arrayIndex++;
@@ -453,7 +449,7 @@ namespace Scaleout.Collections
             {
                 for (int i = 0; i < _buckets.Length; i++)
                 {
-                    if (_buckets[i].HashCode > Unoccupied)
+                    if (_hashes[i] > Unoccupied)
                     {
                         yield return new KeyValuePair<TKey, TValue>(_buckets[i].Key, _buckets[i].Value);
                     }
@@ -473,7 +469,7 @@ namespace Scaleout.Collections
 
             if (bucketIndex >= 0)
             {
-                _buckets[bucketIndex].HashCode = Tombstone;
+                _hashes[bucketIndex] = Tombstone;
                 _buckets[bucketIndex].Key = default(TKey);
                 _buckets[bucketIndex].Value = default(TValue);
                 _count--;
@@ -492,7 +488,7 @@ namespace Scaleout.Collections
             int bucketIndex = FindRandomOccupied(predicate);
             if (bucketIndex >= 0)
             {
-                _buckets[bucketIndex].HashCode = Tombstone;
+                _hashes[bucketIndex] = Tombstone;
                 _buckets[bucketIndex].Key = default(TKey);
                 _buckets[bucketIndex].Value = default(TValue);
                 _count--;
@@ -513,7 +509,7 @@ namespace Scaleout.Collections
             if (bucketIndex >= 0)
             {
                 var kvp = new KeyValuePair<TKey, TValue>(_buckets[bucketIndex].Key, _buckets[bucketIndex].Value);
-                _buckets[bucketIndex].HashCode = Tombstone;
+                _hashes[bucketIndex] = Tombstone;
                 _buckets[bucketIndex].Key = default(TKey);
                 _buckets[bucketIndex].Value = default(TValue);
                 _count--;
@@ -606,7 +602,7 @@ namespace Scaleout.Collections
 
             if (bucketIndex >= 0 && EqualityComparer<TValue>.Default.Equals(item.Value, _buckets[bucketIndex].Value))
             {
-                _buckets[bucketIndex].HashCode = Tombstone;
+                _hashes[bucketIndex] = Tombstone;
                 _buckets[bucketIndex].Key = default(TKey);
                 _buckets[bucketIndex].Value = default(TValue);
                 _count--;
@@ -676,9 +672,10 @@ namespace Scaleout.Collections
                     throw new ArgumentException("The number of elements in the source collection is greater than the available space from arrayIndex to the end of the destination array.");
 
                 var buckets = _dict._buckets;
+                var hashes = _dict._hashes;
                 for (int i = 0; i < buckets.Length; i++)
                 {
-                    if (buckets[i].HashCode > Unoccupied)
+                    if (hashes[i] > Unoccupied)
                     {
                         array[arrayIndex] = buckets[i].Key;
                         arrayIndex++;
@@ -693,9 +690,10 @@ namespace Scaleout.Collections
                 else
                 {
                     var buckets = _dict._buckets;
+                    var hashes = _dict._hashes;
                     for (int i = 0; i < buckets.Length; i++)
                     {
-                        if (buckets[i].HashCode > Unoccupied)
+                        if (hashes[i] > Unoccupied)
                         {
                             yield return buckets[i].Key;
                         }
@@ -754,9 +752,10 @@ namespace Scaleout.Collections
                     throw new ArgumentException("The number of elements in the source collection is greater than the available space from arrayIndex to the end of the destination array.");
 
                 var buckets = _dict._buckets;
+                var hashes = _dict._hashes;
                 for (int i = 0; i < buckets.Length; i++)
                 {
-                    if (buckets[i].HashCode > Unoccupied)
+                    if (hashes[i] > Unoccupied)
                     {
                         array[arrayIndex] = buckets[i].Value;
                         arrayIndex++;
@@ -771,9 +770,10 @@ namespace Scaleout.Collections
                 else
                 {
                     var buckets = _dict._buckets;
+                    var hashes = _dict._hashes;
                     for (int i = 0; i < buckets.Length; i++)
                     {
-                        if (buckets[i].HashCode > Unoccupied)
+                        if (hashes[i] > Unoccupied)
                         {
                             yield return buckets[i].Value;
                         }
