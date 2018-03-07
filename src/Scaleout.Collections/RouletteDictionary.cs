@@ -27,6 +27,7 @@ namespace Scaleout.Collections
         // Cached references to collections returned by Keys and Values properties.
         private KeyCollection _keys = null;
         private ValueCollection _values = null;
+        private int _countMask;
 
         private struct Bucket
         {
@@ -51,20 +52,21 @@ namespace Scaleout.Collections
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
             
             int initialBucketCount;
-            if (capacity <= 3)
+            if (capacity <= 4)
             {
-                initialBucketCount = 5;
-                _maxCountBeforeResize = 3;
+                initialBucketCount = 8;
+                _maxCountBeforeResize = 6;
             }
             else
             {
                 // we keep the load factor below .75, so add some wiggle room to the requested
                 // capacity to prevent resize operations
-                initialBucketCount = Primes.Next((int)(capacity * 1.5));
+                initialBucketCount = NextPowerOfTwo((int)(capacity * 1.5));
                 _maxCountBeforeResize = (int)(initialBucketCount * MaxLoadFactor);
             }
             _buckets = new Bucket[initialBucketCount];
             _hashes = new int[initialBucketCount];
+            _countMask = initialBucketCount - 1;
         }
 
 
@@ -84,38 +86,25 @@ namespace Scaleout.Collections
                 throw new ArgumentNullException(nameof(key));
 
             if (_count >= _maxCountBeforeResize)
-                Resize(Primes.Next((_buckets.Length * 2) + 1));
+                Resize(_buckets.Length * 2);
 
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
             if (hashcode == 0) hashcode = 1;
 
-            int bucketIndex = hashcode % _buckets.Length;
+            int bucketIndex = hashcode & _countMask;
             int probeIndex = bucketIndex;
 
             int indexOfFirstTombstone = -1;
-            int probeCount = 0;
 
             while (true)
             {
-                if (probeCount >= (_buckets.Length / 2) + 1)
-                {
-                    // This is bad situation. We've already probed over half the buckets in the table and will start
-                    // probing the same buckets over again. We're probably dealing with a poor-quality hash function.
-                    // Performance is already trashed at this point, so we press on by changing the initial desired 
-                    // bucket and starting over.
-                    bucketIndex = ++bucketIndex % _buckets.Length;
-                    probeIndex = bucketIndex;
-                    probeCount = 0;
-                }
-
                 if (_hashes[probeIndex] == Tombstone)
                 {
                     if (indexOfFirstTombstone == -1)
                         indexOfFirstTombstone = probeIndex;
 
                     // need to probe again.
-                    probeCount++;
-                    probeIndex = (bucketIndex + (probeCount * probeCount)) % _buckets.Length;
+                    probeIndex = ++probeIndex & _countMask;
                     continue;
                 }
 
@@ -148,8 +137,7 @@ namespace Scaleout.Collections
                 else
                 {
                     // collision, probe again.
-                    probeCount++;
-                    probeIndex = (bucketIndex + (probeCount * probeCount)) % _buckets.Length;
+                    probeIndex = ++probeIndex & _countMask;
                     continue;
                 }
             }
@@ -168,26 +156,15 @@ namespace Scaleout.Collections
 
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
             if (hashcode == 0) hashcode = 1;
-            int bucketIndex = hashcode % _buckets.Length;
+            int bucketIndex = hashcode & _countMask;
             int probeIndex = bucketIndex;
-            int probeCount = 0;
 
             while (true)
             {
-                if (probeCount > (_buckets.Length / 2) + 1)
-                {
-                    // Already probed over half the buckets in the table. We start the probe sequence
-                    // over again, starting with the next bucket.
-                    bucketIndex = ++bucketIndex % _buckets.Length;
-                    probeIndex = bucketIndex;
-                    probeCount = 0;
-                }
-
                 if (_hashes[probeIndex] == Tombstone)
                 {
                     // need to probe again.
-                    probeCount++;
-                    probeIndex = (bucketIndex + (probeCount * probeCount)) % _buckets.Length;
+                    probeIndex = ++probeIndex & _countMask;
                     continue;
                 }
 
@@ -205,8 +182,7 @@ namespace Scaleout.Collections
                 else
                 {
                     // collision, probe again.
-                    probeCount++;
-                    probeIndex = (bucketIndex + (probeCount * probeCount)) % _buckets.Length;
+                    probeIndex = ++probeIndex & _countMask;
                     continue;
                 }
             }
@@ -264,6 +240,25 @@ namespace Scaleout.Collections
             }
         }
 
+
+        /// <summary>
+        /// Rounds up to the next power of 2.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        private int NextPowerOfTwo(int n)
+        {
+            // see https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+            n--;
+            n |= n >> 1;
+            n |= n >> 2;
+            n |= n >> 4;
+            n |= n >> 8;
+            n |= n >> 16;
+            n++;
+            return n;
+        }
+
         /// <summary>
         /// Resizes the collection. Requested size must be prime or
         /// behavior is undefined.
@@ -273,28 +268,17 @@ namespace Scaleout.Collections
         {
             var newBuckets = new Bucket[newSize];
             var newHashes = new int[newSize];
+            _countMask = newSize - 1;
 
             for (int i = 0; i < _buckets.Length; i++)
             {
                 if (_hashes[i] < 1)
                     continue;
 
-                int bucketIndex = _hashes[i] % newBuckets.Length;
+                int bucketIndex = _hashes[i] & _countMask;
                 int probeIndex = bucketIndex;
-                int probeCount = 0;
                 while (true)
                 {
-                    if (probeCount > (_buckets.Length / 2) + 1)
-                    {
-                        // This is bad situation. We've already probed over half the buckets in the table and will start
-                        // probing the same buckets over again. We're probably dealing with a poor-quality hash function.
-                        // Performance is already trashed at this point, so we press on by changing the initial desired 
-                        // bucket and starting over.
-                        bucketIndex = ++bucketIndex % _buckets.Length;
-                        probeIndex = bucketIndex;
-                        probeCount = 0;
-                    }
-
                     if (newHashes[probeIndex] == Unoccupied)
                     {
                         newHashes[probeIndex] = _hashes[i];
@@ -305,8 +289,7 @@ namespace Scaleout.Collections
                     else
                     {
                         // collision. probe again.
-                        probeCount++;
-                        probeIndex = (bucketIndex + (probeCount * probeCount)) % newBuckets.Length;
+                        probeIndex = ++probeIndex & _countMask;
                     }
 
                 }
@@ -314,6 +297,7 @@ namespace Scaleout.Collections
 
             _buckets = newBuckets;
             _hashes = newHashes;
+            _countMask = newSize - 1;
             _maxCountBeforeResize = (int)(newBuckets.Length * MaxLoadFactor);
         }
 
@@ -325,10 +309,11 @@ namespace Scaleout.Collections
             // we keep the load factor a bit below .75 to keep
             // probing from killing performance.
             int newCapacity;
-            if (_count <= 3)
-                newCapacity = 5;
+            if (_count <= 4)
+                newCapacity = 8;
             else
-                newCapacity = Primes.Next((int)(_count * 1.5));
+                newCapacity = NextPowerOfTwo((int)(_count * 1.5));
+            
             Resize(newCapacity);
         }
 

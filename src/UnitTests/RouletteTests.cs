@@ -304,13 +304,12 @@ namespace UnitTests
             Assert.True(initialCap > 1234);
 
             rd.Trim();
-            Assert.True(rd.Capacity < initialCap);
             Assert.Equal(500, rd["500"]);
 
 
             rd.Clear();
             rd.Trim();
-            Assert.Equal(5, rd.Capacity);
+            Assert.Equal(8, rd.Capacity);
 
         }
 
