@@ -130,7 +130,11 @@ namespace Scaleout.Collections
         /// If false, an ArgumentException is thrown if an item with the same
         /// key alread exists.
         /// </param>
-        private void Set(TKey key, TValue value, bool updateAllowed)
+        /// <param name="maintainCount">
+        /// If true, a random element will be removed to make room when a new
+        /// entry is added.
+        /// </param>
+        private void Set(TKey key, TValue value, bool updateAllowed, bool maintainCount)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
@@ -141,44 +145,57 @@ namespace Scaleout.Collections
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
             int bucketIndex = hashcode & _countMask;
 
-            if (_buckets[bucketIndex] == null)
+            Node node = _buckets[bucketIndex];
+            while (node != null)
             {
-                var newNode = NewNode(hashcode, prev: null, next: null, key: key, val: value);
-                _buckets[bucketIndex] = newNode;
-                _count++;
-            }
-            else
-            {
-                Node node = _buckets[bucketIndex];
-                while (true)
+                if (node.HashCode == hashcode && _comparer.Equals(key, node.Key))
                 {
-                    if (node.HashCode == hashcode && _comparer.Equals(key, node.Key))
-                    {
-                        // found the entry, set new value
-                        if (updateAllowed)
-                            node.Value = value;
-                        else
-                            throw new ArgumentException("An element with the same key already exists in the dictionary.", nameof(key));
-
-                        return;
-                    }
-                    else if (node.Next == null)
-                    {
-                        // key not found. create a new one.
-                        // TODO: add to beginning of the list?
-                        var newNode = NewNode(hashcode, prev: node, next: null, key: key, val: value);
-                        node.Next = newNode;
-                        _count++;
-                        return;
-                    }
+                    // found the entry, set new value
+                    if (updateAllowed)
+                        node.Value = value;
                     else
-                    {
-                        // look at the next node.
-                        node = node.Next;
-                    }
-                } // end while
+                        throw new ArgumentException("An element with the same key already exists in the dictionary.", nameof(key));
+
+                    return;
+                }
+
+                if (node.Next != null)
+                    node = node.Next;
+                else
+                    break;
             }
 
+            if (maintainCount && _count > 0)
+            {
+                int bucketToRemoveFrom = GetRandomOccupiedBucket();
+                if (bucketToRemoveFrom == bucketIndex)
+                {
+                    // remove the node we just looked at:
+                    if (node.Previous == null)
+                        _buckets[bucketIndex] = null;
+                    else
+                        node.Previous.Next = null;
+                    FreeNode(node);
+                    _count--;
+                    node = null;
+                }
+                else
+                {
+                    RemoveFrontNode(bucketToRemoveFrom);
+                }
+            }
+
+            // Add a new node.
+            var newNode = NewNode(hashcode, prev: node, next: null, key: key, val: value);
+            if (node == null)
+                _buckets[bucketIndex] = newNode;
+            else
+                node.Next = newNode;
+
+            _count++;
+            return;
+
+            
 
         } // end Set()
 
@@ -224,8 +241,19 @@ namespace Scaleout.Collections
 
             set
             {
-                Set(key, value, updateAllowed: true);
+                Set(key, value, updateAllowed: true, maintainCount: false);
             }
+        }
+
+        /// <summary>
+        /// Adds/updates the dictionary with a new value. If the operation performs an
+        /// add, a random element will be removed to make room for the new one.
+        /// </summary>
+        /// <param name="key">Key associated with the value.</param>
+        /// <param name="value">New value.</param>
+        public void SetAndMaintainCount(TKey key, TValue value)
+        {
+            Set(key, value, updateAllowed: true, maintainCount: true);
         }
 
 
@@ -309,6 +337,8 @@ namespace Scaleout.Collections
                 newCapacity = NextPowerOfTwo(_count);
             
             Resize(newCapacity);
+            _freeList = null;
+            _freeCount = 0;
         }
 
         public ICollection<TKey> Keys
@@ -333,24 +363,32 @@ namespace Scaleout.Collections
             }
         }
 
+        /// <summary>
+        /// Adds the specified key and value to the dictionary.
+        /// </summary>
+        /// <param name="key">The key of the element to add.</param>
+        /// <param name="value">The value of the element to add. The value can be null for reference types.</param>
+        /// <exception cref="ArgumentException">An element with the same key already exists in the dictionary.</exception>
         public void Add(TKey key, TValue value)
         {
-            Set(key, value, updateAllowed: false);
+            Set(key, value, updateAllowed: false, maintainCount: false);
         }
 
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
         {
-            Set(item.Key, item.Value, updateAllowed: false);
+            Set(item.Key, item.Value, updateAllowed: false, maintainCount: false);
         }
 
         /// <summary>
         /// Removes all items from the dictionary without changing the dictionary's capacity.
         /// </summary>
+        /// <remarks>
+        /// Use <see cref="Trim"/> to reduce the colleciton's capacity.
+        /// </remarks>
         public void Clear()
         {
             if (_count > 0)
             {
-                // TODO: Add some/all of the buckets to the free list?
                 Array.Clear(_buckets, 0, _buckets.Length);
                 _count = 0;
             }
@@ -522,8 +560,17 @@ namespace Scaleout.Collections
         /// <returns>true if an element; otherwise, false. This method returns false if the dictionary is empty.</returns>
         public bool RemoveRandom()
         {
-            if (_count == 0)
+            int bucketIndex = GetRandomOccupiedBucket();
+            if (bucketIndex < 0)
                 return false;
+
+            return RemoveFrontNode(bucketIndex);
+        }
+
+        private int GetRandomOccupiedBucket()
+        {
+            if (_count == 0)
+                return -1;
 
             int bucketIndex = TlsRandom.Next(_buckets.Length);
             while (_buckets[bucketIndex] == null)
@@ -533,8 +580,19 @@ namespace Scaleout.Collections
                     bucketIndex = 0;
             }
 
+            return bucketIndex;
+        }
+
+        /// <summary>
+        /// Removes a entry from a bucket.
+        /// </summary>
+        /// <returns>true if an element; otherwise, false. This method returns false if the dictionary is empty.</returns>
+        private bool RemoveFrontNode(int bucketIndex)
+        {
             // remove first item in bucket
             var node = _buckets[bucketIndex];
+            if (node == null)
+                return false;
 
             // removing the first node in the bucket.
             _buckets[bucketIndex] = node.Next;

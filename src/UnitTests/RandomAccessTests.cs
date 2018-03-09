@@ -110,5 +110,18 @@ namespace UnitTests
 
         }
 
+        [Fact]
+        public void SetAndMaintainCount()
+        {
+            var rd = new RouletteDictionary<string, int>(1000, StringComparer.Ordinal);
+
+            for (int i = 0; i < 10; i++)
+                rd[i.ToString()] = i;
+
+            rd.SetAndMaintainCount("foo", 42);
+            Assert.Equal(10, rd.Count);
+            Assert.True(rd.ContainsKey("foo"));
+        }
+
     }
 }
