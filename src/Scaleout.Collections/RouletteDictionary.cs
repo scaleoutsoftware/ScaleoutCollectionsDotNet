@@ -46,28 +46,51 @@ namespace Scaleout.Collections
                 Key = key;
                 Value = val;
             }
-
-            public void Set(int hash, Node prev, Node next, TKey key, TValue val)
-            {
-                HashCode = hash;
-                Next = next;
-                Previous = prev;
-                Key = key;
-                Value = val;
-            }
         }
 
-        private void AddToFreelist(Node node)
+        private void FreeNode(Node node)
         {
-            node.Next = _freeList;
-            _freeList = node;
             node.Previous = null;
             node.Key = default(TKey);
             node.Value = default(TValue);
+
+            if (_freeCount <= MaxFreeNodes)
+            {
+                // add to the front of the list of free nodes.
+                node.Next = _freeList;
+                _freeList = node;
+                _freeCount++;
+            }
+            else
+            {
+                node.Next = null;
+            }
+        }
+
+        private Node NewNode(int hash, Node prev, Node next, TKey key, TValue val)
+        {
+            if (_freeCount > 0)
+            {
+                Node ret = _freeList;
+                _freeList = ret.Next;
+                _freeCount--;
+
+                ret.HashCode = hash;
+                ret.Next = next;
+                ret.Previous = prev;
+                ret.Key = key;
+                ret.Value = val;
+                return ret;
+            }
+            else
+            {
+                return new Node(hash, prev, next, key, val);
+            }
         }
 
         Node[] _buckets;
         Node _freeList;
+        private const int MaxFreeNodes = 10;
         int _freeCount;
 
         public int Count => _count;
@@ -120,17 +143,7 @@ namespace Scaleout.Collections
 
             if (_buckets[bucketIndex] == null)
             {
-                Node newNode = null;
-                if (_freeList != null)
-                {
-                    newNode = _freeList;
-                    _freeList = _freeList.Next;
-                    newNode.Set(hashcode, prev: null, next: null, key: key, val: value);
-                }
-                else
-                {
-                    newNode = new Node(hashcode, prev: null, next: null, key: key, val: value);
-                }
+                var newNode = NewNode(hashcode, prev: null, next: null, key: key, val: value);
                 _buckets[bucketIndex] = newNode;
                 _count++;
             }
@@ -153,17 +166,7 @@ namespace Scaleout.Collections
                     {
                         // key not found. create a new one.
                         // TODO: add to beginning of the list?
-                        Node newNode = null;
-                        if (_freeList != null)
-                        {
-                            newNode = _freeList;
-                            _freeList = _freeList.Next;
-                            newNode.Set(hashcode, prev: node, next: null, key: key, val: value);
-                        }
-                        else
-                        {
-                            newNode = new Node(hashcode, prev: node, next: null, key: key, val: value);
-                        }
+                        var newNode = NewNode(hashcode, prev: node, next: null, key: key, val: value);
                         node.Next = newNode;
                         _count++;
                         return;
@@ -481,9 +484,8 @@ namespace Scaleout.Collections
                         if (node.Next != null)
                             node.Next.Previous = node.Previous;
                     }
-                    
-                    // TODO: we have unbounded growth of the freelist right now.
-                    AddToFreelist(node);
+
+                    FreeNode(node);
                     _count--;
                     return true;
                 }
@@ -539,8 +541,7 @@ namespace Scaleout.Collections
             if (node.Next != null)
                 node.Next.Previous = null;
 
-            // TODO: we have unbounded growth of the freelist right now.
-            AddToFreelist(node);
+            FreeNode(node);
             _count--;
             return true;
         }
