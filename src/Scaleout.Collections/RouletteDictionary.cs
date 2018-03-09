@@ -27,23 +27,52 @@ namespace Scaleout.Collections
         // Cached references to collections returned by Keys and Values properties.
         private KeyCollection _keys = null;
         private ValueCollection _values = null;
+        // TODO: prime??
         private int _countMask;
 
-        private struct Bucket
+        private class Node
         {
+            public int HashCode;
+            public Node Next;
+            public Node Previous;
             public TKey Key;
             public TValue Value;
+
+            public Node(int hash, Node prev, Node next, TKey key, TValue val)
+            {
+                HashCode = hash;
+                Next = next;
+                Previous = prev;
+                Key = key;
+                Value = val;
+            }
+
+            public void Set(int hash, Node prev, Node next, TKey key, TValue val)
+            {
+                HashCode = hash;
+                Next = next;
+                Previous = prev;
+                Key = key;
+                Value = val;
+            }
         }
 
-        Bucket[] _buckets;
-        int[] _hashes;
+        private void AddToFreelist(Node node)
+        {
+            node.Next = _freeList;
+            _freeList = node;
+            node.Previous = null;
+            node.Key = default(TKey);
+            node.Value = default(TValue);
+        }
+
+        Node[] _buckets;
+        Node _freeList;
+        int _freeCount;
 
         public int Count => _count;
 
         internal int Capacity => _buckets.Length;
-
-        // Default predicate we use when the user doesn't supply one.
-        private static bool AlwaysTrue(TValue value) => true;
 
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
@@ -51,21 +80,19 @@ namespace Scaleout.Collections
         {
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
             
+            
             int initialBucketCount;
             if (capacity <= 4)
             {
                 initialBucketCount = 8;
-                _maxCountBeforeResize = 6;
+                _maxCountBeforeResize = 8;
             }
             else
             {
-                // we keep the load factor below .75, so add some wiggle room to the requested
-                // capacity to prevent resize operations
-                initialBucketCount = NextPowerOfTwo((int)(capacity * 1.5));
-                _maxCountBeforeResize = (int)(initialBucketCount * MaxLoadFactor);
+                initialBucketCount = NextPowerOfTwo(capacity);
+                _maxCountBeforeResize = initialBucketCount;
             }
-            _buckets = new Bucket[initialBucketCount];
-            _hashes = new int[initialBucketCount];
+            _buckets = new Node[initialBucketCount];
             _countMask = initialBucketCount - 1;
         }
 
@@ -89,149 +116,107 @@ namespace Scaleout.Collections
                 Resize(_buckets.Length * 2);
 
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
-            if (hashcode == 0) hashcode = 1;
-
             int bucketIndex = hashcode & _countMask;
-            int probeIndex = bucketIndex;
 
-            int indexOfFirstTombstone = -1;
-
-            while (true)
+            if (_buckets[bucketIndex] == null)
             {
-                if (_hashes[probeIndex] == Tombstone)
+                Node newNode = null;
+                if (_freeList != null)
                 {
-                    if (indexOfFirstTombstone == -1)
-                        indexOfFirstTombstone = probeIndex;
-
-                    // need to probe again.
-                    probeIndex = ++probeIndex & _countMask;
-                    continue;
-                }
-
-                if (_hashes[probeIndex] == Unoccupied)
-                {
-                    // didn't find the entry, adding new value.
-                    _count++;
-
-                    // fill in a tombstone, if possible:
-                    if (indexOfFirstTombstone != -1)
-                        probeIndex = indexOfFirstTombstone;
-
-                    _hashes[probeIndex] = hashcode;
-                    _buckets[probeIndex].Key = key;
-                    _buckets[probeIndex].Value = value;
-
-                    return;
-                }
-
-                if (hashcode == _hashes[probeIndex] && _comparer.Equals(key, _buckets[probeIndex].Key))
-                {
-                    // found the entry, set new value
-                    if (updateAllowed)
-                        _buckets[probeIndex].Value = value;
-                    else
-                        throw new ArgumentException("An element with the same key already exists in the dictionary.", nameof(key));
-
-                    return;
+                    newNode = _freeList;
+                    _freeList = _freeList.Next;
+                    newNode.Set(hashcode, prev: null, next: null, key: key, val: value);
                 }
                 else
                 {
-                    // collision, probe again.
-                    probeIndex = ++probeIndex & _countMask;
-                    continue;
+                    newNode = new Node(hashcode, prev: null, next: null, key: key, val: value);
                 }
+                _buckets[bucketIndex] = newNode;
+                _count++;
             }
-        }
+            else
+            {
+                Node node = _buckets[bucketIndex];
+                while (true)
+                {
+                    if (node.HashCode == hashcode && _comparer.Equals(key, node.Key))
+                    {
+                        // found the entry, set new value
+                        if (updateAllowed)
+                            node.Value = value;
+                        else
+                            throw new ArgumentException("An element with the same key already exists in the dictionary.", nameof(key));
+
+                        return;
+                    }
+                    else if (node.Next == null)
+                    {
+                        // key not found. create a new one.
+                        // TODO: add to beginning of the list?
+                        Node newNode = null;
+                        if (_freeList != null)
+                        {
+                            newNode = _freeList;
+                            _freeList = _freeList.Next;
+                            newNode.Set(hashcode, prev: node, next: null, key: key, val: value);
+                        }
+                        else
+                        {
+                            newNode = new Node(hashcode, prev: node, next: null, key: key, val: value);
+                        }
+                        node.Next = newNode;
+                        _count++;
+                        return;
+                    }
+                    else
+                    {
+                        // look at the next node.
+                        node = node.Next;
+                    }
+                } // end while
+            }
+
+
+        } // end Set()
 
 
         /// <summary>
-        /// Gets the bucket index containing the entry with the specified key, or -1 if not found.
+        /// Gets the node containing the entry with the specified key, or null if not found.
         /// </summary>
         /// <param name="key">Key to search for.</param>
-        /// <returns>Bucket index or -1.</returns>
-        private int FindKey(TKey key)
+        /// <returns>Node or null if not found.</returns>
+        private Node FindKey(TKey key)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
-            if (hashcode == 0) hashcode = 1;
             int bucketIndex = hashcode & _countMask;
-            int probeIndex = bucketIndex;
 
-            while (true)
+            Node node = _buckets[bucketIndex];
+
+            while (node != null)
             {
-                if (_hashes[probeIndex] == Tombstone)
-                {
-                    // need to probe again.
-                    probeIndex = ++probeIndex & _countMask;
-                    continue;
-                }
-
-                if (_hashes[probeIndex] == Unoccupied)
-                {
-                    // didn't find the entry
-                    return -1;
-                }
-
-                if (hashcode == _hashes[probeIndex] && _comparer.Equals(key, _buckets[probeIndex].Key))
-                {
-                    // found the entry, return the bucket index.
-                    return probeIndex;
-                }
+                if (node.HashCode == hashcode && _comparer.Equals(key, node.Key))
+                    return node;
                 else
-                {
-                    // collision, probe again.
-                    probeIndex = ++probeIndex & _countMask;
-                    continue;
-                }
+                    node = node.Next;
             }
 
+            return null;
         }
 
-        /// <summary>
-        /// Picks a random, occupied bucket that satisfies a condition.
-        /// </summary>
-        /// <param name="predicate">A function to test each value for a condition, or null.</param>
-        /// <returns>Index of a bucket, -1 if the dictionary is empty, -2 if no elements satisfy the predicate.</returns>
-        private int FindRandomOccupied(Func<TValue, bool> predicate)
-        {
-            if (_count == 0)
-                return -1;
-
-            int probeIndex = TlsRandom.Next(_buckets.Length);
-            // probe forward if even, backwards if odd.
-            int probeIncrement = (probeIndex & 1) == 0 ? 1 : -1;
-
-            int probeCount = 0;
-            while (probeCount < _buckets.Length)
-            {
-                probeCount++;
-                if (_hashes[probeIndex] > Unoccupied && predicate(_buckets[probeIndex].Value))
-                    return probeIndex;
-                else
-                {
-                    probeIndex += probeIncrement;
-                    if (probeIndex < 0)
-                        probeIndex = _buckets.Length - 1;
-                    else if (probeIndex == _buckets.Length)
-                        probeIndex = 0;
-                }
-            }
-
-            return -2;
-        }
 
 
         public TValue this[TKey key]
         {
             get
             {
-                int bucketIndex = FindKey(key);
-                if (bucketIndex < 0)
+                var node = FindKey(key);
+                if (node == null)
                     throw new KeyNotFoundException("Key does not exist in the collection");
                 else
-                    return _buckets[bucketIndex].Value;
+                    return node.Value;
             }
 
             set
@@ -266,39 +251,47 @@ namespace Scaleout.Collections
         /// <param name="newSize"></param>
         private void Resize(int newSize)
         {
-            var newBuckets = new Bucket[newSize];
-            var newHashes = new int[newSize];
+            var newBuckets = new Node[newSize];
             _countMask = newSize - 1;
 
             for (int i = 0; i < _buckets.Length; i++)
             {
-                if (_hashes[i] < 1)
-                    continue;
-
-                int bucketIndex = _hashes[i] & _countMask;
-                int probeIndex = bucketIndex;
+                Node node = _buckets[i];
+                
                 while (true)
                 {
-                    if (newHashes[probeIndex] == Unoccupied)
-                    {
-                        newHashes[probeIndex] = _hashes[i];
-                        newBuckets[probeIndex].Key = _buckets[i].Key;
-                        newBuckets[probeIndex].Value = _buckets[i].Value;
+                    if (_buckets[i] == null)
                         break;
+                    else
+                        node = _buckets[i];
+
+                    _buckets[i] = node.Next;
+                    if (_buckets[i] != null)
+                        _buckets[i].Previous = null;
+
+                    int newIndex = node.HashCode & _countMask;
+                    if (newBuckets[newIndex] == null)
+                    {
+                        newBuckets[newIndex] = node;
+                        node.Previous = null;
+                        node.Next = null;
                     }
                     else
                     {
-                        // collision. probe again.
-                        probeIndex = ++probeIndex & _countMask;
+                        Node newBucket = newBuckets[newIndex];
+                        while (newBucket.Next != null)
+                            newBucket = newBucket.Next;
+
+                        newBucket.Next = node;
+                        node.Previous = newBucket;
+                        node.Next = null;
                     }
 
                 }
             }
 
             _buckets = newBuckets;
-            _hashes = newHashes;
-            _countMask = newSize - 1;
-            _maxCountBeforeResize = (int)(newBuckets.Length * MaxLoadFactor);
+            _maxCountBeforeResize = newBuckets.Length;
         }
 
         /// <summary>
@@ -306,13 +299,11 @@ namespace Scaleout.Collections
         /// </summary>
         public void Trim()
         {
-            // we keep the load factor a bit below .75 to keep
-            // probing from killing performance.
             int newCapacity;
             if (_count <= 4)
                 newCapacity = 8;
             else
-                newCapacity = NextPowerOfTwo((int)(_count * 1.5));
+                newCapacity = NextPowerOfTwo(_count);
             
             Resize(newCapacity);
         }
@@ -356,17 +347,17 @@ namespace Scaleout.Collections
         {
             if (_count > 0)
             {
+                // TODO: Add some/all of the buckets to the free list?
                 Array.Clear(_buckets, 0, _buckets.Length);
-                Array.Clear(_hashes, 0, _hashes.Length);
                 _count = 0;
             }
         }
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
-            int bucketIndex = FindKey(item.Key);
+            var node = FindKey(item.Key);
 
-            if (bucketIndex >= 0 && EqualityComparer<TValue>.Default.Equals(item.Value, _buckets[bucketIndex].Value))
+            if (node != null && EqualityComparer<TValue>.Default.Equals(item.Value, node.Value))
                 return true;
             else
                 return false;
@@ -374,7 +365,7 @@ namespace Scaleout.Collections
 
         public bool ContainsKey(TKey key)
         {
-            return FindKey(key) >= 0;
+            return (FindKey(key) != null);
         }
 
         public bool ContainsValue(TValue value)
@@ -383,8 +374,13 @@ namespace Scaleout.Collections
             {
                 for (int i = 0; i < _buckets.Length; i++)
                 {
-                    if (_hashes[i] > Unoccupied && _buckets[i].Value == null)
-                        return true;
+                    var node = _buckets[i];
+                    while (node != null)
+                    {
+                        if (node.Value == null)
+                            return true;
+                        node = node.Next;
+                    }
                 }
             }
             else
@@ -392,8 +388,13 @@ namespace Scaleout.Collections
                 var comparer = EqualityComparer<TValue>.Default;
                 for (int i = 0; i < _buckets.Length; i++)
                 {
-                    if (_hashes[i] > Unoccupied && comparer.Equals(_buckets[i].Value, value))
-                        return true;
+                    var node = _buckets[i];
+                    while (node != null)
+                    {
+                        if (comparer.Equals(node.Value, value))
+                            return true;
+                        node = node.Next;
+                    }
                 }
             }
             return false;
@@ -417,9 +418,11 @@ namespace Scaleout.Collections
 
             for (int i = 0; i < _buckets.Length; i++)
             {
-                if (_hashes[i] > Unoccupied)
+                var node = _buckets[i];
+                while (node != null)
                 {
-                    array[arrayIndex] = new KeyValuePair<TKey, TValue>(_buckets[i].Key, _buckets[i].Value);
+                    array[arrayIndex] = new KeyValuePair<TKey, TValue>(node.Key, node.Value);
+                    node = node.Next;
                     arrayIndex++;
                 }
             }
@@ -434,9 +437,11 @@ namespace Scaleout.Collections
             {
                 for (int i = 0; i < _buckets.Length; i++)
                 {
-                    if (_hashes[i] > Unoccupied)
+                    var node = _buckets[i];
+                    while (node != null)
                     {
-                        yield return new KeyValuePair<TKey, TValue>(_buckets[i].Key, _buckets[i].Value);
+                        yield return new KeyValuePair<TKey, TValue>(node.Key, node.Value);
+                        node = node.Next;
                     }
                 }
             }
@@ -450,18 +455,44 @@ namespace Scaleout.Collections
         /// <returns>true if the element is found and removed; otherwise, false. This method returns false if key is not found in the dictionary</returns>
         public bool Remove(TKey key)
         {
-            int bucketIndex = FindKey(key);
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
-            if (bucketIndex >= 0)
+            int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
+            int bucketIndex = hashcode & _countMask;
+
+            Node node = _buckets[bucketIndex];
+
+            while (node != null)
             {
-                _hashes[bucketIndex] = Tombstone;
-                _buckets[bucketIndex].Key = default(TKey);
-                _buckets[bucketIndex].Value = default(TValue);
-                _count--;
-                return true;
+                if (node.HashCode == hashcode && _comparer.Equals(key, node.Key))
+                {
+                    if (node.Previous == null)
+                    {
+                        // removing the first node in the bucket.
+                        _buckets[bucketIndex] = node.Next;
+                        if (node.Next != null)
+                            node.Next.Previous = null;
+                    }
+                    else
+                    {
+                        // removing the node somewhere at the middle/end of list
+                        node.Previous.Next = node.Next;
+                        if (node.Next != null)
+                            node.Next.Previous = node.Previous;
+                    }
+                    
+                    // TODO: we have unbounded growth of the freelist right now.
+                    AddToFreelist(node);
+                    _count--;
+                    return true;
+                }
+                else
+                    node = node.Next;
             }
-            else
-                return false;
+
+            return false;
+
         }
 
         /// <summary>
@@ -470,17 +501,7 @@ namespace Scaleout.Collections
         /// <returns>true if an element; otherwise, false. This method returns false if the dictionary is empty or if no element satisfies the condition in predicate.</returns>
         public bool RemoveRandom(Func<TValue, bool> predicate)
         {
-            int bucketIndex = FindRandomOccupied(predicate);
-            if (bucketIndex >= 0)
-            {
-                _hashes[bucketIndex] = Tombstone;
-                _buckets[bucketIndex].Key = default(TKey);
-                _buckets[bucketIndex].Value = default(TValue);
-                _count--;
-                return true;
-            }
-            else
-                return false;
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -490,22 +511,7 @@ namespace Scaleout.Collections
         /// <returns>A KeyValuePair containing the removed entry.</returns>
         public KeyValuePair<TKey, TValue> RemoveRandomAndGet(Func<TValue, bool> predicate)
         {
-            int bucketIndex = FindRandomOccupied(predicate);
-            if (bucketIndex >= 0)
-            {
-                var kvp = new KeyValuePair<TKey, TValue>(_buckets[bucketIndex].Key, _buckets[bucketIndex].Value);
-                _hashes[bucketIndex] = Tombstone;
-                _buckets[bucketIndex].Key = default(TKey);
-                _buckets[bucketIndex].Value = default(TValue);
-                _count--;
-                return kvp;
-            }
-            else if (bucketIndex == -1)
-                throw new InvalidOperationException("Dictionary is empty.");
-            else if (bucketIndex == -2)
-                throw new InvalidOperationException("No element satisfies the condition in predicate.");
-            else
-                throw new NotImplementedException("Unexpected negative return code.");
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -514,7 +520,29 @@ namespace Scaleout.Collections
         /// <returns>true if an element; otherwise, false. This method returns false if the dictionary is empty.</returns>
         public bool RemoveRandom()
         {
-            return RemoveRandom(predicate: AlwaysTrue);
+            if (_count == 0)
+                return false;
+
+            int bucketIndex = TlsRandom.Next(_buckets.Length);
+            while (_buckets[bucketIndex] == null)
+            {
+                bucketIndex++;
+                if (bucketIndex == _buckets.Length)
+                    bucketIndex = 0;
+            }
+
+            // remove first item in bucket
+            var node = _buckets[bucketIndex];
+
+            // removing the first node in the bucket.
+            _buckets[bucketIndex] = node.Next;
+            if (node.Next != null)
+                node.Next.Previous = null;
+
+            // TODO: we have unbounded growth of the freelist right now.
+            AddToFreelist(node);
+            _count--;
+            return true;
         }
 
         /// <summary>
@@ -524,85 +552,50 @@ namespace Scaleout.Collections
         /// <returns>A KeyValuePair containing the removed entry.</returns>
         public KeyValuePair<TKey, TValue> RemoveRandomAndGet()
         {
-            return RemoveRandomAndGet(predicate: AlwaysTrue);
+            throw new NotImplementedException();
         }
 
         public TValue GetRandomValue(Func<TValue, bool> predicate)
         {
-            int bucketIndex = FindRandomOccupied(predicate);
-            if (bucketIndex >= 0)
-                return _buckets[bucketIndex].Value;
-            else if (bucketIndex == -1)
-                throw new InvalidOperationException("Dictionary is empty.");
-            else if (bucketIndex == -2)
-                throw new InvalidOperationException("No element satisfies the condition in predicate.");
-            else
-                throw new NotImplementedException("Unexpected negative return code.");
+            throw new NotImplementedException();
         }
 
         public TKey GetRandomKey(Func<TValue, bool> predicate)
         {
-            int bucketIndex = FindRandomOccupied(predicate);
-            if (bucketIndex >= 0)
-                return _buckets[bucketIndex].Key;
-            else if (bucketIndex == -1)
-                throw new InvalidOperationException("Dictionary is empty.");
-            else if (bucketIndex == -2)
-                throw new InvalidOperationException("No element satisfies the condition in predicate.");
-            else
-                throw new NotImplementedException("Unexpected negative return code.");
+            throw new NotImplementedException();
         }
 
         public KeyValuePair<TKey, TValue> GetRandomKeyAndValue(Func<TValue, bool> predicate)
         {
-            int bucketIndex = FindRandomOccupied(predicate);
-            if (bucketIndex >= 0)
-                return new KeyValuePair<TKey, TValue>(_buckets[bucketIndex].Key, _buckets[bucketIndex].Value);
-            else if (bucketIndex == -1)
-                throw new InvalidOperationException("Dictionary is empty.");
-            else if (bucketIndex == -2)
-                throw new InvalidOperationException("No element satisfies the condition in predicate.");
-            else
-                throw new NotImplementedException("Unexpected negative return code.");
+            throw new NotImplementedException();
         }
 
         public TValue GetRandomValue()
         {
-            return GetRandomValue(predicate: AlwaysTrue);
+            throw new NotImplementedException();
         }
 
         public TKey GetRandomKey()
         {
-            return GetRandomKey(predicate: AlwaysTrue);
+            throw new NotImplementedException();
         }
 
         public KeyValuePair<TKey,TValue> GetRandomKeyAndValue()
         {
-            return GetRandomKeyAndValue(predicate: AlwaysTrue);
+            throw new NotImplementedException();
         }
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
-            int bucketIndex = FindKey(item.Key);
-
-            if (bucketIndex >= 0 && EqualityComparer<TValue>.Default.Equals(item.Value, _buckets[bucketIndex].Value))
-            {
-                _hashes[bucketIndex] = Tombstone;
-                _buckets[bucketIndex].Key = default(TKey);
-                _buckets[bucketIndex].Value = default(TValue);
-                _count--;
-                return true;
-            }
-            else
-                return false;
+            throw new NotImplementedException();
         }
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            int bucketIndex = FindKey(key);
-            if (bucketIndex >= 0)
+            var node = FindKey(key);
+            if (node != null)
             {
-                value = _buckets[bucketIndex].Value;
+                value = node.Value;
                 return true;
             }
             else
@@ -657,12 +650,13 @@ namespace Scaleout.Collections
                     throw new ArgumentException("The number of elements in the source collection is greater than the available space from arrayIndex to the end of the destination array.");
 
                 var buckets = _dict._buckets;
-                var hashes = _dict._hashes;
                 for (int i = 0; i < buckets.Length; i++)
                 {
-                    if (hashes[i] > Unoccupied)
+                    var node = buckets[i];
+                    while (node != null)
                     {
-                        array[arrayIndex] = buckets[i].Key;
+                        array[arrayIndex] = node.Key;
+                        node = node.Next;
                         arrayIndex++;
                     }
                 }
@@ -675,12 +669,13 @@ namespace Scaleout.Collections
                 else
                 {
                     var buckets = _dict._buckets;
-                    var hashes = _dict._hashes;
                     for (int i = 0; i < buckets.Length; i++)
                     {
-                        if (hashes[i] > Unoccupied)
+                        var node = buckets[i];
+                        while (node != null)
                         {
-                            yield return buckets[i].Key;
+                            yield return node.Key;
+                            node = node.Next;
                         }
                     }
                 }
@@ -737,12 +732,13 @@ namespace Scaleout.Collections
                     throw new ArgumentException("The number of elements in the source collection is greater than the available space from arrayIndex to the end of the destination array.");
 
                 var buckets = _dict._buckets;
-                var hashes = _dict._hashes;
                 for (int i = 0; i < buckets.Length; i++)
                 {
-                    if (hashes[i] > Unoccupied)
+                    var node = buckets[i];
+                    while (node != null)
                     {
-                        array[arrayIndex] = buckets[i].Value;
+                        array[arrayIndex] = node.Value;
+                        node = node.Next;
                         arrayIndex++;
                     }
                 }
@@ -755,12 +751,13 @@ namespace Scaleout.Collections
                 else
                 {
                     var buckets = _dict._buckets;
-                    var hashes = _dict._hashes;
                     for (int i = 0; i < buckets.Length; i++)
                     {
-                        if (hashes[i] > Unoccupied)
+                        var node = buckets[i];
+                        while (node != null)
                         {
-                            yield return buckets[i].Value;
+                            yield return node.Value;
+                            node = node.Next;
                         }
                     }
                 }
