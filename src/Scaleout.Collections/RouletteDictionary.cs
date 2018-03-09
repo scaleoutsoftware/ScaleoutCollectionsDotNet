@@ -14,21 +14,24 @@ namespace Scaleout.Collections
     [DebuggerDisplay("Count = {Count}")]
     public class RouletteDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
-        private const float MaxLoadFactor = 0.75f;
-        private const int Unoccupied = 0;
-        private const int Tombstone = -1;
-
         private int _count = 0;
-        // Max count, inclusive, before resize.
-        private int _maxCountBeforeResize;
+        private int _countMask; // applied to hashes to select buckets
 
         IEqualityComparer<TKey> _comparer;
 
         // Cached references to collections returned by Keys and Values properties.
         private KeyCollection _keys = null;
         private ValueCollection _values = null;
-        // TODO: prime??
-        private int _countMask;
+
+        Node[] _buckets;
+
+        // This dictionary is intended for use as a building block
+        // for a fixed-size cache.
+        // We maintain a small list of free bucket nodes to reduce
+        // allocation/GC overhead when operating at/near capacity.
+        private const int MaxFreeNodes = 10;
+        Node _freeList;
+        int _freeCount;
 
         private class Node
         {
@@ -48,7 +51,7 @@ namespace Scaleout.Collections
             }
         }
 
-        private void FreeNode(Node node)
+        private void ReleaseNode(Node node)
         {
             node.Previous = null;
             node.Key = default(TKey);
@@ -67,7 +70,7 @@ namespace Scaleout.Collections
             }
         }
 
-        private Node NewNode(int hash, Node prev, Node next, TKey key, TValue val)
+        private Node AcquireNewNode(int hash, Node prev, Node next, TKey key, TValue val)
         {
             if (_freeCount > 0)
             {
@@ -88,32 +91,24 @@ namespace Scaleout.Collections
             }
         }
 
-        Node[] _buckets;
-        Node _freeList;
-        private const int MaxFreeNodes = 10;
-        int _freeCount;
-
         public int Count => _count;
 
         internal int Capacity => _buckets.Length;
 
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
-        public RouletteDictionary(int capacity = 1, IEqualityComparer<TKey> comparer = null)
+        public RouletteDictionary(int capacity = 0, IEqualityComparer<TKey> comparer = null)
         {
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
-            
             
             int initialBucketCount;
             if (capacity <= 4)
             {
                 initialBucketCount = 8;
-                _maxCountBeforeResize = 8;
             }
             else
             {
                 initialBucketCount = NextPowerOfTwo(capacity);
-                _maxCountBeforeResize = initialBucketCount;
             }
             _buckets = new Node[initialBucketCount];
             _countMask = initialBucketCount - 1;
@@ -139,7 +134,7 @@ namespace Scaleout.Collections
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
-            if (_count >= _maxCountBeforeResize)
+            if (_count >= _buckets.Length)
                 Resize(_buckets.Length * 2);
 
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
@@ -175,7 +170,7 @@ namespace Scaleout.Collections
                         _buckets[bucketIndex] = null;
                     else
                         node.Previous.Next = null;
-                    FreeNode(node);
+                    ReleaseNode(node);
                     _count--;
                     node = null;
                 }
@@ -186,7 +181,7 @@ namespace Scaleout.Collections
             }
 
             // Add a new node.
-            var newNode = NewNode(hashcode, prev: node, next: null, key: key, val: value);
+            var newNode = AcquireNewNode(hashcode, prev: node, next: null, key: key, val: value);
             if (node == null)
                 _buckets[bucketIndex] = newNode;
             else
@@ -205,7 +200,7 @@ namespace Scaleout.Collections
         /// </summary>
         /// <param name="key">Key to search for.</param>
         /// <returns>Node or null if not found.</returns>
-        private Node FindKey(TKey key)
+        private Node Find(TKey key)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
@@ -226,13 +221,11 @@ namespace Scaleout.Collections
             return null;
         }
 
-
-
         public TValue this[TKey key]
         {
             get
             {
-                var node = FindKey(key);
+                var node = Find(key);
                 if (node == null)
                     throw new KeyNotFoundException("Key does not exist in the collection");
                 else
@@ -260,8 +253,6 @@ namespace Scaleout.Collections
         /// <summary>
         /// Rounds up to the next power of 2.
         /// </summary>
-        /// <param name="n"></param>
-        /// <returns></returns>
         private int NextPowerOfTwo(int n)
         {
             // see https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
@@ -276,7 +267,7 @@ namespace Scaleout.Collections
         }
 
         /// <summary>
-        /// Resizes the collection. Requested size must be prime or
+        /// Resizes the collection. Requested size must be a power of two or
         /// behavior is undefined.
         /// </summary>
         /// <param name="newSize"></param>
@@ -322,7 +313,6 @@ namespace Scaleout.Collections
             }
 
             _buckets = newBuckets;
-            _maxCountBeforeResize = newBuckets.Length;
         }
 
         /// <summary>
@@ -383,7 +373,7 @@ namespace Scaleout.Collections
         /// Removes all items from the dictionary without changing the dictionary's capacity.
         /// </summary>
         /// <remarks>
-        /// Use <see cref="Trim"/> to reduce the colleciton's capacity.
+        /// Use <see cref="Trim"/> to reduce the collection's capacity.
         /// </remarks>
         public void Clear()
         {
@@ -396,7 +386,7 @@ namespace Scaleout.Collections
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
-            var node = FindKey(item.Key);
+            var node = Find(item.Key);
 
             if (node != null && EqualityComparer<TValue>.Default.Equals(item.Value, node.Value))
                 return true;
@@ -404,11 +394,24 @@ namespace Scaleout.Collections
                 return false;
         }
 
+        /// <summary>
+        /// Determines whether the dictionary contains the specified key.
+        /// </summary>
+        /// <param name="key">The key to locate</param>
+        /// <returns>true if the dictionary contains an element with the specified key; otherwise, false.</returns>
         public bool ContainsKey(TKey key)
         {
-            return (FindKey(key) != null);
+            return (Find(key) != null);
         }
 
+        /// <summary>
+        /// Determines whether the dictionary contains the specified value.
+        /// </summary>
+        /// <param name="value">The value to locate</param>
+        /// <returns>true if the dictionary contains an element with the specified value; otherwise, false.</returns>
+        /// <remarks>
+        /// This in an O(n) operation.
+        /// </remarks>
         public bool ContainsValue(TValue value)
         {
             if (value == null)
@@ -470,6 +473,11 @@ namespace Scaleout.Collections
 
         }
 
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the dictionary.
+        /// </summary>
+        /// <returns>An enumerator to iterate through the dictionary's key/value pairs.</returns>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             if (_count == 0)
@@ -523,7 +531,7 @@ namespace Scaleout.Collections
                             node.Next.Previous = node.Previous;
                     }
 
-                    FreeNode(node);
+                    ReleaseNode(node);
                     _count--;
                     return true;
                 }
@@ -599,7 +607,7 @@ namespace Scaleout.Collections
             if (node.Next != null)
                 node.Next.Previous = null;
 
-            FreeNode(node);
+            ReleaseNode(node);
             _count--;
             return true;
         }
@@ -651,7 +659,7 @@ namespace Scaleout.Collections
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            var node = FindKey(key);
+            var node = Find(key);
             if (node != null)
             {
                 value = node.Value;
