@@ -8,14 +8,33 @@ using System.Text;
 
 namespace Scaleout.Collections
 {
-    // TODO: Serialization
-    // TODO: Condition for random read/remove
 
+    /// <summary>
+    /// A collection of keys and values.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the keys in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of the values in the dictionary.</typeparam>
+    /// <remarks>
+    /// <para>
+    /// This dictionary is intended to be used as a building block for caches that perform
+    /// random eviction. The <see cref="SetAndMaintainCount(TKey, TValue)"/> method is 
+    /// the primary method for this use case. It allows entries to be added/updated in the 
+    /// dictionary and removes a random item if the operation results in an add to prevent
+    /// unbounded growth.
+    /// </para><para>
+    /// The collection also offers methods for retrieval and removal of random items.
+    /// </para>
+    /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
     public class RouletteDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
+        // A straightforward hashtable implementation.
+        //  - Collision resolution: chaining.
+        //  - Bucket count: always a power of two.
+
+        Node[] _buckets;
         private int _count = 0;
-        private int _countMask; // applied to hashes to select buckets
+        private int _countMask; // applied to hashes to select buckets (faster than modulo, but requires a good hash function).
 
         IEqualityComparer<TKey> _comparer;
 
@@ -23,12 +42,10 @@ namespace Scaleout.Collections
         private KeyCollection _keys = null;
         private ValueCollection _values = null;
 
-        Node[] _buckets;
-
         // This dictionary is intended for use as a building block
-        // for a fixed-size cache.
-        // We maintain a small list of free bucket nodes to reduce
-        // allocation/GC overhead when operating at/near capacity.
+        // for a fixed-size cache. We maintain a small list of free 
+        // bucket nodes to reduce allocation/GC overhead when 
+        // such a cache is operating at/near capacity.
         private const int MaxFreeNodes = 10;
         Node _freeList;
         int _freeCount;
@@ -160,18 +177,16 @@ namespace Scaleout.Collections
                     break;
             }
 
+            // Key not found, we need to do an add. Caller might want us to make room first, though:
             if (maintainCount && _count > 0)
             {
+                // Remove an entry to make room for the new one.
                 int bucketToRemoveFrom = GetRandomOccupiedBucket();
+
                 if (bucketToRemoveFrom == bucketIndex)
                 {
                     // remove the node we just looked at:
-                    if (node.Previous == null)
-                        _buckets[bucketIndex] = null;
-                    else
-                        node.Previous.Next = null;
-                    ReleaseNode(node);
-                    _count--;
+                    RemoveNode(node, bucketIndex);
                     node = null;
                 }
                 else
@@ -189,8 +204,6 @@ namespace Scaleout.Collections
 
             _count++;
             return;
-
-            
 
         } // end Set()
 
