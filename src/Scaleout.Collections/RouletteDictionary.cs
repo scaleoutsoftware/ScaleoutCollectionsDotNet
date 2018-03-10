@@ -50,6 +50,11 @@ namespace Scaleout.Collections
         Node _freeList;
         int _freeCount;
 
+        // Used for random removals. (Random retrievals don't
+        // use this--they use TlsRandom because people are used
+        // to doing unsynchronized reads from dictionaries).
+        private Random _rand = new Random();
+
         private class Node
         {
             public int HashCode;
@@ -614,7 +619,7 @@ namespace Scaleout.Collections
             if (_count == 0)
                 return -1;
 
-            int bucketIndex = TlsRandom.Next(_buckets.Length);
+            int bucketIndex = _rand.Next(_buckets.Length);
             while (_buckets[bucketIndex] == null)
             {
                 bucketIndex++;
