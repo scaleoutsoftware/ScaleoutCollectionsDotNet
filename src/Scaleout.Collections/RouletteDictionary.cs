@@ -729,9 +729,32 @@ namespace Scaleout.Collections
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
-            throw new NotImplementedException();
+            if (item.Key == null) throw new ArgumentNullException("item.Key");
+            int hashcode = _comparer.GetHashCode(item.Key) & 0x7FFFFFFF;
+            int bucketIndex = hashcode & _countMask;
+
+            var node = Find(item.Key);
+
+            if (node != null && EqualityComparer<TValue>.Default.Equals(item.Value, node.Value))
+            {
+                RemoveNode(node, bucketIndex);
+                return true;
+            }
+            else
+                return false;
+
         }
 
+        /// <summary>
+        /// Gets the value associated with the specified key.
+        /// </summary>
+        /// <param name="key">The key of the value to get.</param>
+        /// <param name="value">
+        /// When this method returns, contains the value associated with the specified key, 
+        /// if the key is found; otherwise, the default value for the type of the value parameter. 
+        /// This parameter is passed uninitialized.
+        /// </param>
+        /// <returns>true if the dictionary contains an element with the specified key; otherwise, false.</returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
             var node = Find(key);
