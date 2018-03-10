@@ -748,13 +748,12 @@ namespace Scaleout.Collections
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
             if (item.Key == null) throw new ArgumentNullException("item.Key");
-            int hashcode = _comparer.GetHashCode(item.Key) & 0x7FFFFFFF;
-            int bucketIndex = hashcode & _countMask;
 
             var node = Find(item.Key);
 
             if (node != null && EqualityComparer<TValue>.Default.Equals(item.Value, node.Value))
             {
+                int bucketIndex = node.HashCode & _countMask;
                 RemoveNode(node, bucketIndex);
                 return true;
             }
