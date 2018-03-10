@@ -516,23 +516,7 @@ namespace Scaleout.Collections
             {
                 if (node.HashCode == hashcode && _comparer.Equals(key, node.Key))
                 {
-                    if (node.Previous == null)
-                    {
-                        // removing the first node in the bucket.
-                        _buckets[bucketIndex] = node.Next;
-                        if (node.Next != null)
-                            node.Next.Previous = null;
-                    }
-                    else
-                    {
-                        // removing the node somewhere at the middle/end of list
-                        node.Previous.Next = node.Next;
-                        if (node.Next != null)
-                            node.Next.Previous = node.Previous;
-                    }
-
-                    ReleaseNode(node);
-                    _count--;
+                    RemoveNode(node, bucketIndex);
                     return true;
                 }
                 else
@@ -543,13 +527,41 @@ namespace Scaleout.Collections
 
         }
 
+        private void RemoveNode(Node node, int bucketIndex)
+        {
+            if (bucketIndex < 0 || bucketIndex >= _buckets.Length)
+                throw new ArgumentOutOfRangeException(nameof(bucketIndex));
+            if (node == null)
+                throw new ArgumentNullException(nameof(node));
+
+            if (node.Previous == null)
+                _buckets[bucketIndex] = node.Next;
+            else
+                node.Previous.Next = node.Next;
+
+            if (node.Next != null)
+                node.Next.Previous = node.Previous;
+
+            ReleaseNode(node);
+            _count--;
+
+        }
+
         /// <summary>
         /// Removes a random entry from the dictionary that satisfies a condition.
         /// </summary>
         /// <returns>true if an element; otherwise, false. This method returns false if the dictionary is empty or if no element satisfies the condition in predicate.</returns>
         public bool RemoveRandom(Func<TValue, bool> predicate)
         {
-            throw new NotImplementedException();
+            if (Count == 0)
+                return false;
+
+            int bucketIndex = GetRandomNode(predicate, out Node node);
+            if (bucketIndex < 0)
+                return false;
+
+            RemoveNode(node, bucketIndex);
+            return true;
         }
 
         /// <summary>
@@ -559,7 +571,16 @@ namespace Scaleout.Collections
         /// <returns>A KeyValuePair containing the removed entry.</returns>
         public KeyValuePair<TKey, TValue> RemoveRandomAndGet(Func<TValue, bool> predicate)
         {
-            throw new NotImplementedException();
+            if (Count == 0)
+                throw new InvalidOperationException("Dictionary is empty.");
+
+            int bucketIndex = GetRandomNode(predicate, out Node node);
+            if (bucketIndex < 0)
+                throw new InvalidOperationException("No entries satisfy the predicate.");
+
+            var ret = new KeyValuePair<TKey, TValue>(node.Key, node.Value);
+            RemoveNode(node, bucketIndex);
+            return ret;
         }
 
         /// <summary>
@@ -591,8 +612,40 @@ namespace Scaleout.Collections
             return bucketIndex;
         }
 
+        private int GetRandomNode(Func<TValue, bool> predicate, out Node node)
+        {
+            int checkedObjCount = 0;
+            if (_count == 0)
+            {
+                node = null;
+                return -1;
+            }
+
+            int bucketIndex = TlsRandom.Next(_buckets.Length);
+            while (checkedObjCount <= _count)
+            {
+                node = _buckets[bucketIndex];
+                while (node != null)
+                {
+                    if (predicate(node.Value))
+                    {
+                        return bucketIndex;
+                    }
+                    node = node.Next;
+                }
+
+                bucketIndex++;
+                if (bucketIndex == _buckets.Length)
+                    bucketIndex = 0;
+            }
+
+            // Didn't find any objects that satisfy the predicate.
+            node = null;
+            return -1;
+        }
+
         /// <summary>
-        /// Removes a entry from a bucket.
+        /// Removes an entry from a bucket.
         /// </summary>
         /// <returns>true if an element; otherwise, false. This method returns false if the dictionary is empty.</returns>
         private bool RemoveFrontNode(int bucketIndex)
@@ -619,37 +672,59 @@ namespace Scaleout.Collections
         /// <returns>A KeyValuePair containing the removed entry.</returns>
         public KeyValuePair<TKey, TValue> RemoveRandomAndGet()
         {
-            throw new NotImplementedException();
+            return RemoveRandomAndGet(v => true);
         }
 
         public TValue GetRandomValue(Func<TValue, bool> predicate)
         {
-            throw new NotImplementedException();
+            if (Count == 0)
+                throw new InvalidOperationException("Dictionary is empty.");
+
+            int bucketIndex = GetRandomNode(predicate, out Node node);
+            if (bucketIndex < 0)
+                throw new InvalidOperationException("No entries satisfy the predicate.");
+
+            return node.Value;
         }
 
         public TKey GetRandomKey(Func<TValue, bool> predicate)
         {
-            throw new NotImplementedException();
+            if (Count == 0)
+                throw new InvalidOperationException("Dictionary is empty.");
+
+            int bucketIndex = GetRandomNode(predicate, out Node node);
+            if (bucketIndex < 0)
+                throw new InvalidOperationException("No entries satisfy the predicate.");
+
+            return node.Key;
         }
 
         public KeyValuePair<TKey, TValue> GetRandomKeyAndValue(Func<TValue, bool> predicate)
         {
-            throw new NotImplementedException();
+            if (Count == 0)
+                throw new InvalidOperationException("Dictionary is empty.");
+
+            int bucketIndex = GetRandomNode(predicate, out Node node);
+            if (bucketIndex < 0)
+                throw new InvalidOperationException("No entries satisfy the predicate.");
+
+            var ret = new KeyValuePair<TKey, TValue>(node.Key, node.Value);
+            return ret;
         }
 
         public TValue GetRandomValue()
         {
-            throw new NotImplementedException();
+            return GetRandomValue(v => true);
         }
 
         public TKey GetRandomKey()
         {
-            throw new NotImplementedException();
+            return GetRandomKey(v => true);
         }
 
         public KeyValuePair<TKey,TValue> GetRandomKeyAndValue()
         {
-            throw new NotImplementedException();
+            return GetRandomKeyAndValue(v => true);
         }
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
