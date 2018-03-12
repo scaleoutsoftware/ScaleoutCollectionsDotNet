@@ -596,6 +596,18 @@ namespace Scaleout.Collections
 
         }
 
+        public bool RemoveLru()
+        {
+            if (_count == 0)
+                return false;
+
+
+            var nodeToRemove = _lruTail;
+            RemoveFromLru(nodeToRemove);
+            RemoveNode(nodeToRemove, nodeToRemove.HashCode & _countMask);
+            return true;
+        }
+
         private void RemoveNode(Node node, int bucketIndex)
         {
             if (bucketIndex < 0 || bucketIndex >= _buckets.Length)
