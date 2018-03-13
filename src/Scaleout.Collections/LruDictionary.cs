@@ -7,6 +7,21 @@ using System.Diagnostics;
 
 namespace Scaleout.Collections
 {
+    /// <summary>
+    /// A collection of keys and values that tracks the order in which entries
+    /// are accessed.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the keys in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of the values in the dictionary.</typeparam>
+    /// <remarks>
+    /// <para>
+    /// This dictionary is intended to be used as a building block for caches that perform
+    /// LRU eviction. The <see cref="SetAndMaintainCount(TKey, TValue)"/> method is 
+    /// the primary method for this use case. It allows entries to be added/updated in the 
+    /// dictionary and removes the least recently used item if the operation results in 
+    /// an add to prevent unbounded growth.
+    /// </para>
+    /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
     public class LruDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
@@ -98,12 +113,25 @@ namespace Scaleout.Collections
             }
         }
 
+        /// <summary>
+        /// Gets the number of key/value pairs contained in the dictionary.
+        /// </summary>
         public int Count => _count;
 
         internal int Capacity => _buckets.Length;
 
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="capacity">
+        /// The initial number of elements that the dictionary can contain before resizing internally.
+        /// </param>
+        /// <param name="comparer">
+        /// The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, 
+        /// or null to use the default comparer for the type of the key.
+        /// </param>
         public LruDictionary(int capacity = 0, IEqualityComparer<TKey> comparer = null)
         {
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
@@ -261,6 +289,7 @@ namespace Scaleout.Collections
         /// Gets the node containing the entry with the specified key, or null if not found.
         /// </summary>
         /// <param name="key">Key to search for.</param>
+        /// <param name="updateLru">Whether to update the interal LRU list.</param>
         /// <returns>Node or null if not found.</returns>
         private Node Find(TKey key, bool updateLru)
         {
@@ -287,6 +316,14 @@ namespace Scaleout.Collections
             return null;
         }
 
+        /// <summary>
+        /// Gets or sets the value associated with the specified key, marking the entry
+        /// as the most recently used.
+        /// </summary>
+        /// <param name="key">The key of the value to get or set.</param>
+        /// <returns>The value associated with the key.</returns>
+        /// <exception cref="KeyNotFoundException">The key does not exist in the collection when performing a get.</exception>
+        /// <exception cref="ArgumentNullException">The provided key is null.</exception>
         public TValue this[TKey key]
         {
             get
@@ -306,7 +343,7 @@ namespace Scaleout.Collections
 
         /// <summary>
         /// Adds/updates the dictionary with a new value. If the operation performs an
-        /// add, the lease recently accessed element will be removed to make room for the new one.
+        /// add, the least recently accessed element will be removed to make room for the new one.
         /// </summary>
         /// <param name="key">Key associated with the value.</param>
         /// <param name="value">New value.</param>
@@ -397,6 +434,9 @@ namespace Scaleout.Collections
             _freeCount = 0;
         }
 
+        /// <summary>
+        /// Gets a collection containing the keys in the dictionary.
+        /// </summary>
         public ICollection<TKey> Keys
         {
             get
@@ -408,6 +448,9 @@ namespace Scaleout.Collections
             }
         }
 
+        /// <summary>
+        /// Gets a collection containing the values in the dictionary.
+        /// </summary>
         public ICollection<TValue> Values
         {
             get
@@ -596,6 +639,10 @@ namespace Scaleout.Collections
 
         }
 
+        /// <summary>
+        /// Removes the least recently accessed item from the dictionary.
+        /// </summary>
+        /// <returns>true if an item was successfully removed, or false if the dictionary is empty.</returns>
         public bool RemoveLru()
         {
             if (_count == 0)
@@ -682,14 +729,21 @@ namespace Scaleout.Collections
             return GetEnumerator();
         }
 
+        /// <summary>
+        /// Represents the collection of keys in a <see cref="LruDictionary{TKey, TValue}"/>.
+        /// </summary>
         public class KeyCollection : ICollection<TKey>, IEnumerable<TKey>, IReadOnlyCollection<TKey>
         {
             private LruDictionary<TKey, TValue> _dict;
 
-            public KeyCollection(LruDictionary<TKey, TValue> dictionary)
+            internal KeyCollection(LruDictionary<TKey, TValue> dictionary)
             {
                 _dict = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
             }
+
+            /// <summary>
+            /// Gets the number of elements in the key collection.
+            /// </summary>
             public int Count => _dict.Count;
 
             bool ICollection<TKey>.IsReadOnly => true;
@@ -709,6 +763,11 @@ namespace Scaleout.Collections
                 return _dict.ContainsKey(item);
             }
 
+            /// <summary>
+            /// Copies the key elements to an existing array, starting at the specified array index.
+            /// </summary>
+            /// <param name="array">Destination array.</param>
+            /// <param name="arrayIndex">Offset in the desination array at which to begin copying.</param>
             public void CopyTo(TKey[] array, int arrayIndex)
             {
                 if (array == null) throw new ArgumentNullException(nameof(array));
@@ -732,6 +791,10 @@ namespace Scaleout.Collections
                 }
             }
 
+            /// <summary>
+            /// Gets an enumerator that iterates through a collection.
+            /// </summary>
+            /// <returns>An enumerator that can be used to iterate through the collection.</returns>
             public IEnumerator<TKey> GetEnumerator()
             {
                 if (_dict._count == 0)
@@ -764,14 +827,21 @@ namespace Scaleout.Collections
         } // end KeyCollection
 
 
+        /// <summary>
+        /// Represents the collection of values in a <see cref="LruDictionary{TKey, TValue}"/>.
+        /// </summary>
         public class ValueCollection : ICollection<TValue>, IEnumerable<TValue>, IReadOnlyCollection<TValue>
         {
             private LruDictionary<TKey, TValue> _dict;
 
-            public ValueCollection(LruDictionary<TKey, TValue> dictionary)
+            internal ValueCollection(LruDictionary<TKey, TValue> dictionary)
             {
                 _dict = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
             }
+
+            /// <summary>
+            /// Gets the number of elements in the value collection.
+            /// </summary>
             public int Count => _dict.Count;
 
             bool ICollection<TValue>.IsReadOnly => true;
@@ -814,6 +884,10 @@ namespace Scaleout.Collections
                 }
             }
 
+            /// <summary>
+            /// Gets an enumerator that iterates through a collection.
+            /// </summary>
+            /// <returns>An enumerator that can be used to iterate through the collection.</returns>
             public IEnumerator<TValue> GetEnumerator()
             {
                 if (_dict._count == 0)

@@ -12,4 +12,8 @@
     <AssemblyOriginatorKeyFile>Scaleout.Collections.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\Scaleout.Collections.xml</DocumentationFile>
+  </PropertyGroup>
+
 </Project>

@@ -10,7 +10,8 @@ namespace Scaleout.Collections
 {
 
     /// <summary>
-    /// A collection of keys and values.
+    /// A collection of keys and values that allows random entries to be retrieved
+    /// or removed.
     /// </summary>
     /// <typeparam name="TKey">The type of the keys in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of the values in the dictionary.</typeparam>
@@ -52,10 +53,14 @@ namespace Scaleout.Collections
         Node _freeList;
         int _freeCount;
 
-        // Used for random removals. (Random retrievals don't
-        // use this--they use TlsRandom because people are used
-        // to doing unsynchronized reads from dictionaries).
+        // RNG for random accesses. 
         private Random _rand = new Random();
+
+        // Spinlock for protecting _rand above --
+        // people are accustomed to doing unsynchronized 
+        // reads from dictionaries. But System.Random is stateful
+        // and does terrible things if accessed concurrently (quietly starts
+        // returning nothing but zeros, which is not very random).
         private SpinLock _randGuard = new SpinLock(enableThreadOwnerTracking: false);
 
         private class Node
@@ -116,12 +121,25 @@ namespace Scaleout.Collections
             }
         }
 
+        /// <summary>
+        /// Gets the number of key/value pairs contained in the dictionary.
+        /// </summary>
         public int Count => _count;
 
         internal int Capacity => _buckets.Length;
 
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="capacity">
+        /// The initial number of elements that the dictionary can contain before resizing internally.
+        /// </param>
+        /// <param name="comparer">
+        /// The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, 
+        /// or null to use the default comparer for the type of the key.
+        /// </param>
         public RouletteDictionary(int capacity = 0, IEqualityComparer<TKey> comparer = null)
         {
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
@@ -242,6 +260,13 @@ namespace Scaleout.Collections
             return null;
         }
 
+        /// <summary>
+        /// Gets or sets the value associated with the specified key.
+        /// </summary>
+        /// <param name="key">The key of the value to get or set.</param>
+        /// <returns>The value associated with the key.</returns>
+        /// <exception cref="KeyNotFoundException">The key does not exist in the collection when performing a get.</exception>
+        /// <exception cref="ArgumentNullException">The provided key is null.</exception>
         public TValue this[TKey key]
         {
             get
@@ -276,7 +301,7 @@ namespace Scaleout.Collections
         /// </summary>
         private int NextPowerOfTwo(int n)
         {
-            // see https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+            // from https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2 (public domain)
             n--;
             n |= n >> 1;
             n |= n >> 2;
@@ -352,6 +377,9 @@ namespace Scaleout.Collections
             _freeCount = 0;
         }
 
+        /// <summary>
+        /// Gets a collection containing the keys in the dictionary.
+        /// </summary>
         public ICollection<TKey> Keys
         {
             get
@@ -363,6 +391,9 @@ namespace Scaleout.Collections
             }
         }
 
+        /// <summary>
+        /// Gets a collection containing the values in the dictionary.
+        /// </summary>
         public ICollection<TValue> Values
         {
             get
@@ -709,6 +740,14 @@ namespace Scaleout.Collections
             return RemoveRandomAndGet(v => true);
         }
 
+        /// <summary>
+        /// Gets a random value from the dictionary that satisfies a condition.
+        /// </summary>
+        /// <param name="predicate">A function to test elements for a condition.</param>
+        /// <returns>A random value from the dictionary.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is empty or no entries satisfy the predicate.
+        /// </exception>
         public TValue GetRandomValue(Func<TValue, bool> predicate)
         {
             if (Count == 0)
@@ -721,6 +760,14 @@ namespace Scaleout.Collections
             return node.Value;
         }
 
+        /// <summary>
+        /// Gets a random value from the dictionary that satisfies a condition.
+        /// </summary>
+        /// <param name="predicate">A function to test elements for a condition.</param>
+        /// <returns>A random value from the dictionary.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is empty or no entries satisfy the predicate.
+        /// </exception>
         public TKey GetRandomKey(Func<TValue, bool> predicate)
         {
             if (Count == 0)
@@ -733,6 +780,14 @@ namespace Scaleout.Collections
             return node.Key;
         }
 
+        /// <summary>
+        /// Gets a random key-value pair from the dictionary whose value satisfies a condition.
+        /// </summary>
+        /// <param name="predicate">A function to test elements for a condition.</param>
+        /// <returns>A random key-value pair from the dictionary.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is empty or no entries satisfy the predicate.
+        /// </exception>
         public KeyValuePair<TKey, TValue> GetRandomKeyAndValue(Func<TValue, bool> predicate)
         {
             if (Count == 0)
@@ -746,16 +801,37 @@ namespace Scaleout.Collections
             return ret;
         }
 
+        /// <summary>
+        /// Gets a random value from the dictionary.
+        /// </summary>
+        /// <returns>A random value from the dictionary.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is empty.
+        /// </exception>
         public TValue GetRandomValue()
         {
             return GetRandomValue(v => true);
         }
 
+        /// <summary>
+        /// Gets a random key from the dictionary.
+        /// </summary>
+        /// <returns>A random key from the dictionary.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is empty.
+        /// </exception>
         public TKey GetRandomKey()
         {
             return GetRandomKey(v => true);
         }
 
+        /// <summary>
+        /// Gets a random key-value pair from the dictionary.
+        /// </summary>
+        /// <returns>A random entry from the dictionary.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is empty.
+        /// </exception>
         public KeyValuePair<TKey,TValue> GetRandomKeyAndValue()
         {
             return GetRandomKeyAndValue(v => true);
@@ -810,14 +886,21 @@ namespace Scaleout.Collections
             return GetEnumerator();
         }
 
+        /// <summary>
+        /// Represents the collection of keys in a <see cref="RouletteDictionary{TKey, TValue}"/>.
+        /// </summary>
         public class KeyCollection : ICollection<TKey>, IEnumerable<TKey>, IReadOnlyCollection<TKey>
         {
             private RouletteDictionary<TKey, TValue> _dict;
 
-            public KeyCollection(RouletteDictionary<TKey, TValue> dictionary)
+            internal KeyCollection(RouletteDictionary<TKey, TValue> dictionary)
             {
                 _dict = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
             }
+
+            /// <summary>
+            /// Gets the number of elements in the key collection.
+            /// </summary>
             public int Count => _dict.Count;
 
             bool ICollection<TKey>.IsReadOnly => true;
@@ -837,6 +920,11 @@ namespace Scaleout.Collections
                 return _dict.ContainsKey(item);
             }
 
+            /// <summary>
+            /// Copies the key elements to an existing array, starting at the specified array index.
+            /// </summary>
+            /// <param name="array">Destination array.</param>
+            /// <param name="arrayIndex">Offset in the desination array at which to begin copying.</param>
             public void CopyTo(TKey[] array, int arrayIndex)
             {
                 if (array == null) throw new ArgumentNullException(nameof(array));
@@ -860,6 +948,10 @@ namespace Scaleout.Collections
                 }
             }
 
+            /// <summary>
+            /// Gets an enumerator that iterates through a collection.
+            /// </summary>
+            /// <returns>An enumerator that can be used to iterate through the collection.</returns>
             public IEnumerator<TKey> GetEnumerator()
             {
                 if (_dict._count == 0)
@@ -892,14 +984,21 @@ namespace Scaleout.Collections
         } // end KeyCollection
 
 
+        /// <summary>
+        /// Represents the collection of values in a <see cref="RouletteDictionary{TKey, TValue}"/>.
+        /// </summary>
         public class ValueCollection : ICollection<TValue>, IEnumerable<TValue>, IReadOnlyCollection<TValue>
         {
             private RouletteDictionary<TKey, TValue> _dict;
 
-            public ValueCollection(RouletteDictionary<TKey, TValue> dictionary)
+            internal ValueCollection(RouletteDictionary<TKey, TValue> dictionary)
             {
                 _dict = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
             }
+
+            /// <summary>
+            /// Gets the number of elements in the value collection.
+            /// </summary>
             public int Count => _dict.Count;
 
             bool ICollection<TValue>.IsReadOnly => true;
@@ -942,6 +1041,10 @@ namespace Scaleout.Collections
                 }
             }
 
+            /// <summary>
+            /// Gets an enumerator that iterates through a collection.
+            /// </summary>
+            /// <returns>An enumerator that can be used to iterate through the collection.</returns>
             public IEnumerator<TValue> GetEnumerator()
             {
                 if (_dict._count == 0)
