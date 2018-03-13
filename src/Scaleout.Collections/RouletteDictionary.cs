@@ -37,7 +37,7 @@ namespace Scaleout.Collections
 
         Node[] _buckets;
         private int _count = 0;
-        private int _countMask; // applied to hashes to select buckets (faster than modulo, but requires a good hash function).
+        private int _bucketMask; // applied to hashes to select buckets (faster than modulo, but requires a good hash function).
 
         IEqualityComparer<TKey> _comparer;
 
@@ -142,8 +142,11 @@ namespace Scaleout.Collections
         /// </param>
         public RouletteDictionary(int capacity = 0, IEqualityComparer<TKey> comparer = null)
         {
+            if (capacity < 0 || capacity > (1 << 30))
+                throw new ArgumentOutOfRangeException(nameof(capacity), capacity, "Capacity must be between 0 and 1,073,741,824 (inclusive)");
+
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
-            
+
             int initialBucketCount;
             if (capacity <= 4)
             {
@@ -154,7 +157,7 @@ namespace Scaleout.Collections
                 initialBucketCount = NextPowerOfTwo(capacity);
             }
             _buckets = new Node[initialBucketCount];
-            _countMask = initialBucketCount - 1;
+            _bucketMask = initialBucketCount - 1;
         }
 
 
@@ -181,7 +184,7 @@ namespace Scaleout.Collections
                 Resize(_buckets.Length * 2);
 
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
-            int bucketIndex = hashcode & _countMask;
+            int bucketIndex = hashcode & _bucketMask;
 
             Node node = _buckets[bucketIndex];
             while (node != null)
@@ -245,7 +248,7 @@ namespace Scaleout.Collections
                 throw new ArgumentNullException(nameof(key));
 
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
-            int bucketIndex = hashcode & _countMask;
+            int bucketIndex = hashcode & _bucketMask;
 
             Node node = _buckets[bucketIndex];
 
@@ -319,8 +322,11 @@ namespace Scaleout.Collections
         /// <param name="newSize"></param>
         private void Resize(int newSize)
         {
+            if (newSize > (1 << 30))
+                throw new ArgumentOutOfRangeException(nameof(newSize), newSize, "Capacity cannot exceed 1,073,741,824 items.");
+
             var newBuckets = new Node[newSize];
-            _countMask = newSize - 1;
+            _bucketMask = newSize - 1;
 
             for (int i = 0; i < _buckets.Length; i++)
             {
@@ -337,7 +343,7 @@ namespace Scaleout.Collections
                     if (_buckets[i] != null)
                         _buckets[i].Previous = null;
 
-                    int newIndex = node.HashCode & _countMask;
+                    int newIndex = node.HashCode & _bucketMask;
                     if (newBuckets[newIndex] == null)
                     {
                         newBuckets[newIndex] = node;
@@ -560,7 +566,7 @@ namespace Scaleout.Collections
                 throw new ArgumentNullException(nameof(key));
 
             int hashcode = _comparer.GetHashCode(key) & 0x7FFFFFFF;
-            int bucketIndex = hashcode & _countMask;
+            int bucketIndex = hashcode & _bucketMask;
 
             Node node = _buckets[bucketIndex];
 
@@ -845,7 +851,7 @@ namespace Scaleout.Collections
 
             if (node != null && EqualityComparer<TValue>.Default.Equals(item.Value, node.Value))
             {
-                int bucketIndex = node.HashCode & _countMask;
+                int bucketIndex = node.HashCode & _bucketMask;
                 RemoveNode(node, bucketIndex);
                 return true;
             }
