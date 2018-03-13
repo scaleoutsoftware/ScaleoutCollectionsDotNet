@@ -9,6 +9,10 @@ namespace Scaleout.Collections
     // numbers and to stop checking after sqrt(n). Based on "Implementation 4" from
     // https://stackoverflow.com/a/5694432/3634591
 
+    // This class is not currently used--collections in this assembly are now sized to be
+    // a power of two instead of prime. Keeping this class for now in case we revisit this
+    // decision.
+
     static class Primes
     {
         /// <summary>
