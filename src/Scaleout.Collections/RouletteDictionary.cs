@@ -31,6 +31,8 @@ namespace Scaleout.Collections
         // A straightforward hashtable implementation.
         //  - Collision resolution: chaining.
         //  - Bucket count: always a power of two.
+        //  - Random operations pick an occupied bucket and access the first item in the 
+        //    bucket. This gives random ops a slight bias toward selecting older elements.
 
         Node[] _buckets;
         private int _count = 0;
@@ -54,6 +56,7 @@ namespace Scaleout.Collections
         // use this--they use TlsRandom because people are used
         // to doing unsynchronized reads from dictionaries).
         private Random _rand = new Random();
+        private SpinLock _randGuard = new SpinLock(enableThreadOwnerTracking: false);
 
         private class Node
         {
@@ -619,7 +622,14 @@ namespace Scaleout.Collections
             if (_count == 0)
                 return -1;
 
+
+            // Get a random bucket.
+            bool gotLock = false;
+            _randGuard.Enter(ref gotLock);
             int bucketIndex = _rand.Next(_buckets.Length);
+            // Random.Next() never throws, so no point putting Spinlock.Exit() in a finally block.
+            _randGuard.Exit();
+
             while (_buckets[bucketIndex] == null)
             {
                 bucketIndex++;
@@ -639,7 +649,13 @@ namespace Scaleout.Collections
                 return -1;
             }
 
-            int bucketIndex = TlsRandom.Next(_buckets.Length);
+            // Get a random bucket.
+            bool gotLock = false;
+            _randGuard.Enter(ref gotLock);
+            int bucketIndex = _rand.Next(_buckets.Length);
+            // Random.Next() never throws, so no point putting Spinlock.Exit() in a finally block.
+            _randGuard.Exit();
+
             while (checkedObjCount <= _count)
             {
                 node = _buckets[bucketIndex];
