@@ -27,9 +27,9 @@ namespace Scaleout.Collections
     /// </para>
     /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
-    public class RouletteDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+    public sealed class RouletteDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
-        // A straightforward hashtable implementation.
+        // A straightforward hash table implementation.
         //  - Collision resolution: chaining.
         //  - Bucket count: always a power of two.
         //  - Random operations pick an occupied bucket and access the first item in the 
@@ -56,13 +56,14 @@ namespace Scaleout.Collections
         // RNG for random accesses. 
         private Random _rand = new Random();
 
-        // Spinlock for protecting _rand above --
+        // Spin lock for protecting _rand above --
         // people are accustomed to doing unsynchronized 
         // reads from dictionaries. But System.Random is stateful
         // and does terrible things if accessed concurrently (quietly starts
         // returning nothing but zeros, which is not very random).
         private SpinLock _randGuard = new SpinLock(enableThreadOwnerTracking: false);
 
+        // Node containing an item in the collection.
         private class Node
         {
             public int HashCode;
@@ -130,8 +131,34 @@ namespace Scaleout.Collections
 
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
+
         /// <summary>
-        /// Constructor.
+        /// Initializes a new instance of the dictionary that is empty, 
+        /// has the default initial capacity, and uses the default equality comparer for the key type.
+        /// </summary>
+        public RouletteDictionary() : this(0, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the dictionary that is empty, 
+        /// has the specified initial capacity, and uses the default equality comparer for the key type.
+        /// </summary>
+        public RouletteDictionary(int capacity) : this(capacity, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the dictionary that is empty, 
+        /// has the default initial capacity, and uses the specified equality comparer for the key type.
+        /// </summary>
+        public RouletteDictionary(IEqualityComparer<TKey> comparer) : this(0, comparer)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the dictionary with the specified  
+        /// initial capacity and uses the equality comparer for the key type.
         /// </summary>
         /// <param name="capacity">
         /// The initial number of elements that the dictionary can contain before resizing internally.
@@ -140,7 +167,7 @@ namespace Scaleout.Collections
         /// The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, 
         /// or null to use the default comparer for the type of the key.
         /// </param>
-        public RouletteDictionary(int capacity = 0, IEqualityComparer<TKey> comparer = null)
+        public RouletteDictionary(int capacity, IEqualityComparer<TKey> comparer)
         {
             if (capacity < 0 || capacity > (1 << 30))
                 throw new ArgumentOutOfRangeException(nameof(capacity), capacity, "Capacity must be between 0 and 1,073,741,824 (inclusive)");
@@ -169,7 +196,7 @@ namespace Scaleout.Collections
         /// <param name="updateAllowed">
         /// Whether an existing element with the same key may be updated.
         /// If false, an ArgumentException is thrown if an item with the same
-        /// key alread exists.
+        /// key already exists.
         /// </param>
         /// <param name="maintainCount">
         /// If true, a random element will be removed to make room when a new
@@ -302,7 +329,7 @@ namespace Scaleout.Collections
         /// <summary>
         /// Rounds up to the next power of 2.
         /// </summary>
-        private int NextPowerOfTwo(int n)
+        private static int NextPowerOfTwo(int n)
         {
             // from https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2 (public domain)
             n--;
@@ -516,7 +543,7 @@ namespace Scaleout.Collections
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex), arrayIndex, "arrayIndex must reside within the bounds of the destination array");
 
             if ((array.Length - arrayIndex) < _count)
-                throw new ArgumentOutOfRangeException("The number of elements in the source dictionary is greater than the available space from arrayIndex to the end of the destination array.");
+                throw new ArgumentOutOfRangeException(nameof(array), "The number of elements in the source dictionary is greater than the available space from arrayIndex to the end of the destination array.");
 
             for (int i = 0; i < _buckets.Length; i++)
             {
@@ -845,7 +872,7 @@ namespace Scaleout.Collections
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
-            if (item.Key == null) throw new ArgumentNullException("item.Key");
+            if (item.Key == null) throw new ArgumentException("Item's Key property is null", nameof(item));
 
             var node = Find(item.Key);
 
@@ -895,7 +922,7 @@ namespace Scaleout.Collections
         /// <summary>
         /// Represents the collection of keys in a <see cref="RouletteDictionary{TKey, TValue}"/>.
         /// </summary>
-        public class KeyCollection : ICollection<TKey>, IEnumerable<TKey>, IReadOnlyCollection<TKey>
+        public sealed class KeyCollection : ICollection<TKey>, IEnumerable<TKey>, IReadOnlyCollection<TKey>
         {
             private RouletteDictionary<TKey, TValue> _dict;
 
@@ -930,7 +957,7 @@ namespace Scaleout.Collections
             /// Copies the key elements to an existing array, starting at the specified array index.
             /// </summary>
             /// <param name="array">Destination array.</param>
-            /// <param name="arrayIndex">Offset in the desination array at which to begin copying.</param>
+            /// <param name="arrayIndex">Offset in the destination array at which to begin copying.</param>
             public void CopyTo(TKey[] array, int arrayIndex)
             {
                 if (array == null) throw new ArgumentNullException(nameof(array));
@@ -993,7 +1020,7 @@ namespace Scaleout.Collections
         /// <summary>
         /// Represents the collection of values in a <see cref="RouletteDictionary{TKey, TValue}"/>.
         /// </summary>
-        public class ValueCollection : ICollection<TValue>, IEnumerable<TValue>, IReadOnlyCollection<TValue>
+        public sealed class ValueCollection : ICollection<TValue>, IEnumerable<TValue>, IReadOnlyCollection<TValue>
         {
             private RouletteDictionary<TKey, TValue> _dict;
 

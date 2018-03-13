@@ -17,7 +17,7 @@ namespace UnitTests
             for (int i = 0; i < 42; i++)
                 ld.Add(i.ToString(), i);
 
-            ld.RemoveLru();
+            ld.RemoveLeastRecent();
             Assert.False(ld.ContainsKey("0"));
             Assert.True(ld.ContainsKey("1"));
             Assert.Equal(41, ld.Count);
@@ -26,7 +26,7 @@ namespace UnitTests
             // sure it doesn't get removed.
 
             Assert.Equal(1, ld["1"]);
-            ld.RemoveLru();
+            ld.RemoveLeastRecent();
             Assert.True(ld.ContainsKey("1"));
             Assert.False(ld.ContainsKey("2"));
 

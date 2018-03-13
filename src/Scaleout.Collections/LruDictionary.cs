@@ -23,9 +23,10 @@ namespace Scaleout.Collections
     /// </para>
     /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
-    public class LruDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+    public sealed class LruDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
-        // A straightforward hashtable implementation.
+        // A hybrid LinkedList/hashtable collection for fast lookups by key
+        // that maintains the order in which element are accessed.
         //  - Collision resolution: chaining.
         //  - Bucket count: always a power of two.
 
@@ -49,13 +50,23 @@ namespace Scaleout.Collections
         Node _freeList;
         int _freeCount;
 
+        // Node containing an item in the collection.
         private class Node
         {
             public int HashCode;
+            
+            // Next node in hash table bucket.
             public Node Next;
+
+            // Previous node in hash table bucket.
             public Node Previous;
+
+            // Next (older, less recently accessed) node in LRU list.
             public Node LruNext;
+
+            // Previous (newer, more recently accessed) node in LRU list.
             public Node LruPrevious;
+
             public TKey Key;
             public TValue Value;
 
@@ -64,6 +75,8 @@ namespace Scaleout.Collections
                 HashCode = hash;
                 Next = next;
                 Previous = prev;
+                LruNext = lruNext;
+                LruPrevious = lruPrev;
                 Key = key;
                 Value = val;
             }
@@ -123,7 +136,32 @@ namespace Scaleout.Collections
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
         /// <summary>
-        /// Constructor.
+        /// Initializes a new instance of the dictionary that is empty, 
+        /// has the default initial capacity, and uses the default equality comparer for the key type.
+        /// </summary>
+        public LruDictionary() : this(0, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the dictionary that is empty, 
+        /// has the specified initial capacity, and uses the default equality comparer for the key type.
+        /// </summary>
+        public LruDictionary(int capacity) : this(capacity, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the dictionary that is empty, 
+        /// has the default initial capacity, and uses the specified equality comparer for the key type.
+        /// </summary>
+        public LruDictionary(IEqualityComparer<TKey> comparer) : this(0, comparer)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the dictionary with the specified  
+        /// initial capacity and uses the equality comparer for the key type.
         /// </summary>
         /// <param name="capacity">
         /// The initial number of elements that the dictionary can contain before resizing internally.
@@ -132,7 +170,7 @@ namespace Scaleout.Collections
         /// The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, 
         /// or null to use the default comparer for the type of the key.
         /// </param>
-        public LruDictionary(int capacity = 0, IEqualityComparer<TKey> comparer = null)
+        public LruDictionary(int capacity, IEqualityComparer<TKey> comparer)
         {
             if (capacity < 0 || capacity > (1 << 30))
                 throw new ArgumentOutOfRangeException(nameof(capacity), capacity, "Capacity must be between 0 and 1,073,741,824 (inclusive)");
@@ -211,7 +249,7 @@ namespace Scaleout.Collections
         /// <param name="updateAllowed">
         /// Whether an existing element with the same key may be updated.
         /// If false, an ArgumentException is thrown if an item with the same
-        /// key alread exists.
+        /// key already exists.
         /// </param>
         /// <param name="maintainCount">
         /// If true, the lease recently accessed element will be removed to make room when a new
@@ -265,7 +303,7 @@ namespace Scaleout.Collections
 
 
             // Add a new node.
-                var newNode = AcquireNewNode(hashcode, prev: node, next: null, lruPrev: null, lruNext: _lruHead, key: key, val: value);
+            var newNode = AcquireNewNode(hashcode, prev: node, next: null, lruPrev: null, lruNext: _lruHead, key: key, val: value);
 
             // LRU list maintenance:
             if (_lruHead != null)
@@ -292,7 +330,7 @@ namespace Scaleout.Collections
         /// Gets the node containing the entry with the specified key, or null if not found.
         /// </summary>
         /// <param name="key">Key to search for.</param>
-        /// <param name="updateLru">Whether to update the interal LRU list.</param>
+        /// <param name="updateLru">Whether to update the internal LRU list.</param>
         /// <returns>Node or null if not found.</returns>
         private Node Find(TKey key, bool updateLru)
         {
@@ -359,7 +397,7 @@ namespace Scaleout.Collections
         /// <summary>
         /// Rounds up to the next power of 2.
         /// </summary>
-        private int NextPowerOfTwo(int n)
+        private static int NextPowerOfTwo(int n)
         {
             // see https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
             n--;
@@ -575,7 +613,7 @@ namespace Scaleout.Collections
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex), arrayIndex, "arrayIndex must reside within the bounds of the destination array");
 
             if ((array.Length - arrayIndex) < _count)
-                throw new ArgumentOutOfRangeException("The number of elements in the source dictionary is greater than the available space from arrayIndex to the end of the destination array.");
+                throw new ArgumentOutOfRangeException(nameof(array), "The number of elements in the source dictionary is greater than the available space from arrayIndex to the end of the destination array.");
 
             for (int i = 0; i < _buckets.Length; i++)
             {
@@ -646,7 +684,7 @@ namespace Scaleout.Collections
         /// Removes the least recently accessed item from the dictionary.
         /// </summary>
         /// <returns>true if an item was successfully removed, or false if the dictionary is empty.</returns>
-        public bool RemoveLru()
+        public bool RemoveLeastRecent()
         {
             if (_count == 0)
                 return false;
@@ -683,7 +721,7 @@ namespace Scaleout.Collections
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
-            if (item.Key == null) throw new ArgumentNullException("item.Key");
+            if (item.Key == null) throw new ArgumentException("Item's Key property is null", nameof(item));
             int hashcode = _comparer.GetHashCode(item.Key) & 0x7FFFFFFF;
             int bucketIndex = hashcode & _bucketMask;
 
@@ -735,7 +773,7 @@ namespace Scaleout.Collections
         /// <summary>
         /// Represents the collection of keys in a <see cref="LruDictionary{TKey, TValue}"/>.
         /// </summary>
-        public class KeyCollection : ICollection<TKey>, IEnumerable<TKey>, IReadOnlyCollection<TKey>
+        public sealed class KeyCollection : ICollection<TKey>, IEnumerable<TKey>, IReadOnlyCollection<TKey>
         {
             private LruDictionary<TKey, TValue> _dict;
 
@@ -770,7 +808,7 @@ namespace Scaleout.Collections
             /// Copies the key elements to an existing array, starting at the specified array index.
             /// </summary>
             /// <param name="array">Destination array.</param>
-            /// <param name="arrayIndex">Offset in the desination array at which to begin copying.</param>
+            /// <param name="arrayIndex">Offset in the destination array at which to begin copying.</param>
             public void CopyTo(TKey[] array, int arrayIndex)
             {
                 if (array == null) throw new ArgumentNullException(nameof(array));
@@ -829,7 +867,7 @@ namespace Scaleout.Collections
         /// <summary>
         /// Represents the collection of values in a <see cref="LruDictionary{TKey, TValue}"/>.
         /// </summary>
-        public class ValueCollection : ICollection<TValue>, IEnumerable<TValue>, IReadOnlyCollection<TValue>
+        public sealed class ValueCollection : ICollection<TValue>, IEnumerable<TValue>, IReadOnlyCollection<TValue>
         {
             private LruDictionary<TKey, TValue> _dict;
 
