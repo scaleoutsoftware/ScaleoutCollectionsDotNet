@@ -44,5 +44,17 @@ namespace UnitTests
             Assert.Equal(10, ld.Count);
             Assert.True(ld.ContainsKey("foo"));
         }
+
+        [Fact]
+        public void EnumerateMruToLru()
+        {
+            var ld = new LruDictionary<string, int>(1000, StringComparer.Ordinal);
+
+            for (int i = 0; i < 10; i++)
+                ld[i.ToString()] = i;
+
+            Assert.Equal("9", ld.Keys.First());
+            Assert.Equal(0, ld.Values.Last());
+        }
     }
 }

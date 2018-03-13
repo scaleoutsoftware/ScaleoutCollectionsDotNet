@@ -595,14 +595,11 @@ namespace Scaleout.Collections
                 yield break;
             else
             {
-                for (int i = 0; i < _buckets.Length; i++)
+                var node = _lruHead;
+                while (node != null)
                 {
-                    var node = _buckets[i];
-                    while (node != null)
-                    {
-                        yield return new KeyValuePair<TKey, TValue>(node.Key, node.Value);
-                        node = node.Next;
-                    }
+                    yield return new KeyValuePair<TKey, TValue>(node.Key, node.Value);
+                    node = node.LruNext;
                 }
             }
 
@@ -801,15 +798,11 @@ namespace Scaleout.Collections
                     yield break;
                 else
                 {
-                    var buckets = _dict._buckets;
-                    for (int i = 0; i < buckets.Length; i++)
+                    var node = _dict._lruHead;
+                    while (node != null)
                     {
-                        var node = buckets[i];
-                        while (node != null)
-                        {
-                            yield return node.Key;
-                            node = node.Next;
-                        }
+                        yield return node.Key;
+                        node = node.LruNext;
                     }
                 }
 
@@ -894,15 +887,11 @@ namespace Scaleout.Collections
                     yield break;
                 else
                 {
-                    var buckets = _dict._buckets;
-                    for (int i = 0; i < buckets.Length; i++)
+                    var node = _dict._lruHead;
+                    while (node != null)
                     {
-                        var node = buckets[i];
-                        while (node != null)
-                        {
-                            yield return node.Value;
-                            node = node.Next;
-                        }
+                        yield return node.Value;
+                        node = node.LruNext;
                     }
                 }
 
