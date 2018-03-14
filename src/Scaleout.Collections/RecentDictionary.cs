@@ -25,6 +25,7 @@ namespace Scaleout.Collections
     /// <summary>
     /// Enumeration specifying which entry to evict when calling
     /// <see cref="RecentDictionary{TKey, TValue}.SetAndMaintainCount(TKey, TValue)"/>.
+    /// Used when constructing a RecentDictionary instance.
     /// </summary>
     public enum RecentDictionaryEvictionMode {
         /// <summary>
@@ -479,7 +480,9 @@ namespace Scaleout.Collections
 
         /// <summary>
         /// Adds/updates the dictionary with a new value. If the operation performs an
-        /// add, the least recently accessed element will be removed to make room for the new one.
+        /// add, either the least-recently or most-recently accessed element will be 
+        /// removed to make room for the new one (depending on the 
+        /// <see cref="RecentDictionaryEvictionMode"/> passed into the constructor).
         /// </summary>
         /// <param name="key">Key associated with the value.</param>
         /// <param name="value">New value.</param>
