@@ -159,6 +159,9 @@ namespace Scaleout.Collections
         /// Initializes a new instance of the dictionary that is empty, 
         /// has the specified initial capacity, and uses the default equality comparer for the key type.
         /// </summary>
+        /// <param name="capacity">
+        /// The initial number of elements that the dictionary can contain before resizing internally.
+        /// </param>
         public RouletteDictionary(int capacity) : this(capacity, null)
         {
         }
@@ -167,6 +170,10 @@ namespace Scaleout.Collections
         /// Initializes a new instance of the dictionary that is empty, 
         /// has the default initial capacity, and uses the specified equality comparer for the key type.
         /// </summary>
+        /// <param name="comparer">
+        /// The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, 
+        /// or null to use the default comparer for the type of the key.
+        /// </param>
         public RouletteDictionary(IEqualityComparer<TKey> comparer) : this(0, comparer)
         {
         }
@@ -650,6 +657,7 @@ namespace Scaleout.Collections
         /// <summary>
         /// Removes a random entry from the dictionary that satisfies a condition.
         /// </summary>
+        /// <param name="predicate">A function to test elements for a condition.</param>
         /// <returns>true if an element; otherwise, false. This method returns false if the dictionary is empty or if no element satisfies the condition in predicate.</returns>
         public bool RemoveRandom(Func<TValue, bool> predicate)
         {
@@ -668,6 +676,7 @@ namespace Scaleout.Collections
         /// Removes a random entry from the dictionary that satisfies a condition, returning the removed
         /// entry as a KeyValuePair.
         /// </summary>
+        /// <param name="predicate">A function to test elements for a condition.</param>
         /// <returns>A KeyValuePair containing the removed entry.</returns>
         public KeyValuePair<TKey, TValue> RemoveRandomAndGet(Func<TValue, bool> predicate)
         {
