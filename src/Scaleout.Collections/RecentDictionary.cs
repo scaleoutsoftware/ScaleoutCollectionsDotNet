@@ -48,8 +48,8 @@ namespace Scaleout.Collections
     /// This dictionary is intended to be used as a building block for caches that perform
     /// LRU eviction. The <see cref="SetAndMaintainCount(TKey, TValue)"/> method is 
     /// the primary method for this use case. It allows entries to be added/updated in the 
-    /// dictionary and removes the least recently used item if the operation results in 
-    /// an add to prevent unbounded growth.
+    /// dictionary and removes either the least-recently-used or most-recently-used item
+    /// if the operation results in an add to prevent unbounded growth.
     /// </para>
     /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
@@ -59,6 +59,9 @@ namespace Scaleout.Collections
         // that maintains the order in which element are accessed.
         //  - Collision resolution: chaining.
         //  - Bucket count: always a power of two.
+        //  - Possible TODO: The SetAndMaintainCount() signature is identical to
+        //     RouletteDictionary... consider a common "EvictionDictionary"
+        //     abstract base class.
 
         Node[] _buckets;
         Node _lruHead;
@@ -665,29 +668,23 @@ namespace Scaleout.Collections
         {
             if (value == null)
             {
-                for (int i = 0; i < _buckets.Length; i++)
+                var node = _lruHead;
+                while (node != null)
                 {
-                    var node = _buckets[i];
-                    while (node != null)
-                    {
-                        if (node.Value == null)
-                            return true;
-                        node = node.Next;
-                    }
+                    if (node.Value == null)
+                        return true;
+                    node = node.LruNext;
                 }
             }
             else
             {
                 var comparer = EqualityComparer<TValue>.Default;
-                for (int i = 0; i < _buckets.Length; i++)
+                var node = _lruHead;
+                while (node != null)
                 {
-                    var node = _buckets[i];
-                    while (node != null)
-                    {
-                        if (comparer.Equals(node.Value, value))
-                            return true;
-                        node = node.Next;
-                    }
+                    if (comparer.Equals(node.Value, value))
+                        return true;
+                    node = node.LruNext;
                 }
             }
             return false;
@@ -709,17 +706,13 @@ namespace Scaleout.Collections
             if ((array.Length - arrayIndex) < _count)
                 throw new ArgumentOutOfRangeException(nameof(array), "The number of elements in the source dictionary is greater than the available space from arrayIndex to the end of the destination array.");
 
-            for (int i = 0; i < _buckets.Length; i++)
+            var node = _lruHead;
+            while (node != null)
             {
-                var node = _buckets[i];
-                while (node != null)
-                {
-                    array[arrayIndex] = new KeyValuePair<TKey, TValue>(node.Key, node.Value);
-                    node = node.Next;
-                    arrayIndex++;
-                }
+                array[arrayIndex] = new KeyValuePair<TKey, TValue>(node.Key, node.Value);
+                node = node.LruNext;
+                arrayIndex++;
             }
-
         }
 
 
@@ -997,16 +990,12 @@ namespace Scaleout.Collections
                 if ((array.Length - arrayIndex) < _dict.Count)
                     throw new ArgumentException("The number of elements in the source collection is greater than the available space from arrayIndex to the end of the destination array.");
 
-                var buckets = _dict._buckets;
-                for (int i = 0; i < buckets.Length; i++)
+                var node = _dict._lruHead;
+                while (node != null)
                 {
-                    var node = buckets[i];
-                    while (node != null)
-                    {
-                        array[arrayIndex] = node.Key;
-                        node = node.Next;
-                        arrayIndex++;
-                    }
+                    array[arrayIndex] = node.Key;
+                    node = node.LruNext;
+                    arrayIndex++;
                 }
             }
 
@@ -1086,16 +1075,12 @@ namespace Scaleout.Collections
                 if ((array.Length - arrayIndex) < _dict.Count)
                     throw new ArgumentException("The number of elements in the source collection is greater than the available space from arrayIndex to the end of the destination array.");
 
-                var buckets = _dict._buckets;
-                for (int i = 0; i < buckets.Length; i++)
+                var node = _dict._lruHead;
+                while (node != null)
                 {
-                    var node = buckets[i];
-                    while (node != null)
-                    {
-                        array[arrayIndex] = node.Value;
-                        node = node.Next;
-                        arrayIndex++;
-                    }
+                    array[arrayIndex] = node.Value;
+                    node = node.LruNext;
+                    arrayIndex++;
                 }
             }
 
