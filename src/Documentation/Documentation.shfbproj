@@ -34,8 +34,8 @@
     <DisableCodeBlockComponent>False</DisableCodeBlockComponent>
     <CleanIntermediates>True</CleanIntermediates>
     <DocumentationSources>
-      <DocumentationSource sourceFile="..\NetFramework\bin\Release\Scaleout.Collections.dll" xmlns="" />
-      <DocumentationSource sourceFile="..\NetFramework\bin\Release\Scaleout.Collections.xml" xmlns="" />
+      <DocumentationSource sourceFile="..\NetFramework\bin\Release\Scaleout.Collections.xml" />
+      <DocumentationSource sourceFile="..\NetFramework\bin\Release\Scaleout.Collections.dll" />
     </DocumentationSources>
     <HelpFileVersion>1.0.0.0</HelpFileVersion>
     <MaximumGroupParts>2</MaximumGroupParts>
@@ -51,8 +51,9 @@
     <ContentPlacement>AboveNamespaces</ContentPlacement>
     <WarnOnMissingSourceContext>False</WarnOnMissingSourceContext>
     <NamespaceSummaries>
-      <NamespaceSummaryItem name="(global)" isDocumented="False" xmlns="">General purpose dictionaries designed to help in the creation of in-memory caches.</NamespaceSummaryItem>
-    </NamespaceSummaries>
+      <NamespaceSummaryItem name="(global)" isDocumented="False" />
+<NamespaceSummaryItem name="Scaleout.Collections" isDocumented="True">General purpose dictionaries designed to help in the creation of in-memory caches.</NamespaceSummaryItem></NamespaceSummaries>
+    <ProjectSummary>General purpose dictionaries designed to help in the creation of in-memory caches.</ProjectSummary>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
