@@ -24,7 +24,7 @@ namespace Scaleout.Collections
 {
     /// <summary>
     /// Enumeration specifying which entry to evict when calling
-    /// <see cref="LruDictionary{TKey, TValue}.SetAndMaintainCount(TKey, TValue)"/>.
+    /// <see cref="RecentDictionary{TKey, TValue}.SetAndMaintainCount(TKey, TValue)"/>.
     /// </summary>
     public enum RecentDictionaryEvictionMode {
         /// <summary>
@@ -53,7 +53,7 @@ namespace Scaleout.Collections
     /// </para>
     /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class LruDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+    public sealed class RecentDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
         // A hybrid LinkedList/hashtable collection for fast lookups by key
         // that maintains the order in which element are accessed.
@@ -172,7 +172,7 @@ namespace Scaleout.Collections
         /// performs LRU eviction, has the default initial capacity, 
         /// and uses the default equality comparer for the key type.
         /// </summary>
-        public LruDictionary() : this(0, RecentDictionaryEvictionMode.LRU, null)
+        public RecentDictionary() : this(0, RecentDictionaryEvictionMode.LRU, null)
         {
         }
 
@@ -184,7 +184,7 @@ namespace Scaleout.Collections
         /// <param name="capacity">
         /// The initial number of elements that the dictionary can contain before resizing internally.
         /// </param>
-        public LruDictionary(int capacity) : this(capacity, RecentDictionaryEvictionMode.LRU, null)
+        public RecentDictionary(int capacity) : this(capacity, RecentDictionaryEvictionMode.LRU, null)
         {
         }
 
@@ -198,7 +198,7 @@ namespace Scaleout.Collections
         /// Specifies whether the most recent or least recent entry is evicted when
         /// <see cref="SetAndMaintainCount(TKey, TValue)"/> is called.
         /// </param>
-        public LruDictionary(RecentDictionaryEvictionMode evictionMode) : this(0, evictionMode, null)
+        public RecentDictionary(RecentDictionaryEvictionMode evictionMode) : this(0, evictionMode, null)
         {
         }
 
@@ -211,7 +211,7 @@ namespace Scaleout.Collections
         /// The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, 
         /// or null to use the default comparer for the type of the key.
         /// </param>
-        public LruDictionary(IEqualityComparer<TKey> comparer) : this(0, RecentDictionaryEvictionMode.LRU, comparer)
+        public RecentDictionary(IEqualityComparer<TKey> comparer) : this(0, RecentDictionaryEvictionMode.LRU, comparer)
         {
         }
 
@@ -227,7 +227,7 @@ namespace Scaleout.Collections
         /// The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, 
         /// or null to use the default comparer for the type of the key.
         /// </param>
-        public LruDictionary(int capacity, IEqualityComparer<TKey> comparer) : this(capacity, RecentDictionaryEvictionMode.LRU, comparer)
+        public RecentDictionary(int capacity, IEqualityComparer<TKey> comparer) : this(capacity, RecentDictionaryEvictionMode.LRU, comparer)
         {
         }
 
@@ -247,7 +247,7 @@ namespace Scaleout.Collections
         /// The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, 
         /// or null to use the default comparer for the type of the key.
         /// </param>
-        public LruDictionary(int capacity, RecentDictionaryEvictionMode evictionMode, IEqualityComparer<TKey> comparer)
+        public RecentDictionary(int capacity, RecentDictionaryEvictionMode evictionMode, IEqualityComparer<TKey> comparer)
         {
             if (capacity < 0 || capacity > (1 << 30))
                 throw new ArgumentOutOfRangeException(nameof(capacity), capacity, "Capacity must be between 0 and 1,073,741,824 (inclusive)");
@@ -949,13 +949,13 @@ namespace Scaleout.Collections
         }
 
         /// <summary>
-        /// Represents the collection of keys in a <see cref="LruDictionary{TKey, TValue}"/>.
+        /// Represents the collection of keys in a <see cref="RecentDictionary{TKey, TValue}"/>.
         /// </summary>
         public sealed class KeyCollection : ICollection<TKey>, IEnumerable<TKey>, IReadOnlyCollection<TKey>
         {
-            private LruDictionary<TKey, TValue> _dict;
+            private RecentDictionary<TKey, TValue> _dict;
 
-            internal KeyCollection(LruDictionary<TKey, TValue> dictionary)
+            internal KeyCollection(RecentDictionary<TKey, TValue> dictionary)
             {
                 _dict = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
             }
@@ -1043,13 +1043,13 @@ namespace Scaleout.Collections
 
 
         /// <summary>
-        /// Represents the collection of values in a <see cref="LruDictionary{TKey, TValue}"/>.
+        /// Represents the collection of values in a <see cref="RecentDictionary{TKey, TValue}"/>.
         /// </summary>
         public sealed class ValueCollection : ICollection<TValue>, IEnumerable<TValue>, IReadOnlyCollection<TValue>
         {
-            private LruDictionary<TKey, TValue> _dict;
+            private RecentDictionary<TKey, TValue> _dict;
 
-            internal ValueCollection(LruDictionary<TKey, TValue> dictionary)
+            internal ValueCollection(RecentDictionary<TKey, TValue> dictionary)
             {
                 _dict = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
             }

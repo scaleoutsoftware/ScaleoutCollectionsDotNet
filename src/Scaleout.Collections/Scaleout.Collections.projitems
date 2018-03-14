@@ -9,7 +9,7 @@
     <Import_RootNamespace>Scaleout.Collections</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)LruDictionary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RecentDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Primes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RouletteDictionary.cs" />
   </ItemGroup>

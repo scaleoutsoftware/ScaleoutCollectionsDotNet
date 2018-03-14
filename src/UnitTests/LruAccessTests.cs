@@ -28,7 +28,7 @@ namespace UnitTests
         [Fact]
         public void RemoveLru()
         {
-            var ld = new LruDictionary<string, int>();
+            var ld = new RecentDictionary<string, int>();
             for (int i = 0; i < 42; i++)
                 ld.Add(i.ToString(), i);
 
@@ -50,7 +50,7 @@ namespace UnitTests
         [Fact]
         public void SetAndMaintainCount()
         {
-            var ld = new LruDictionary<string, int>(1000, StringComparer.Ordinal);
+            var ld = new RecentDictionary<string, int>(1000, StringComparer.Ordinal);
 
             for (int i = 0; i < 10; i++)
                 ld[i.ToString()] = i;
@@ -63,7 +63,7 @@ namespace UnitTests
         [Fact]
         public void EnumerateMruToLru()
         {
-            var ld = new LruDictionary<string, int>(1000, StringComparer.Ordinal);
+            var ld = new RecentDictionary<string, int>(1000, StringComparer.Ordinal);
 
             for (int i = 0; i < 10; i++)
                 ld[i.ToString()] = i;

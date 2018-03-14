@@ -28,14 +28,14 @@ namespace UnitTests
         [Fact]
         public void EmptyDict()
         {
-            var ld = new LruDictionary<int, int>();
+            var ld = new RecentDictionary<int, int>();
             Assert.Throws<KeyNotFoundException>(() => ld[42]);
         }
 
         [Fact]
         public void OneItem()
         {
-            var ld = new LruDictionary<string, string>(1);
+            var ld = new RecentDictionary<string, string>(1);
             ld["hello"] = "world";
             Assert.Equal("world", ld["hello"]);
             Assert.Throws<KeyNotFoundException>(() => ld["foo"]);
@@ -44,7 +44,7 @@ namespace UnitTests
         [Fact]
         public void UpdateItem()
         {
-            var ld = new LruDictionary<string, int>();
+            var ld = new RecentDictionary<string, int>();
 
             for (int i = 0; i < 10; i++)
                 ld[i.ToString()] = i;
@@ -57,7 +57,7 @@ namespace UnitTests
         [Fact]
         public void BadAdd()
         {
-            var ld = new LruDictionary<int, int>();
+            var ld = new RecentDictionary<int, int>();
             ld.Add(42, 42);
             // Can't add when key already exists:
             Assert.Throws<ArgumentException>(() => ld.Add(42, 123));
@@ -66,7 +66,7 @@ namespace UnitTests
         [Fact]
         public void OneItemBigCapacity()
         {
-            var ld = new LruDictionary<string, string>(100_000);
+            var ld = new RecentDictionary<string, string>(100_000);
             ld["hello"] = "world";
             Assert.Equal("world", ld["hello"]);
             Assert.Throws<KeyNotFoundException>(() => ld["foo"]);
@@ -75,7 +75,7 @@ namespace UnitTests
         [Fact]
         public void CustomComparer()
         {
-            var ld = new LruDictionary<string, string>(comparer: StringComparer.OrdinalIgnoreCase);
+            var ld = new RecentDictionary<string, string>(comparer: StringComparer.OrdinalIgnoreCase);
             ld["hello"] = "world";
             Assert.Equal("world", ld["HELLO"]);
             Assert.Throws<KeyNotFoundException>(() => ld["foo"]);
@@ -85,7 +85,7 @@ namespace UnitTests
         public void TenThousand()
         {
             // start with low capacity to exercise resizing.
-            var ld = new LruDictionary<string, int>(1);
+            var ld = new RecentDictionary<string, int>(1);
 
             for (int i = 0; i < 10_000; i++)
             {
@@ -105,7 +105,7 @@ namespace UnitTests
         [Fact]
         public void Remove()
         {
-            var ld = new LruDictionary<string, int>();
+            var ld = new RecentDictionary<string, int>();
 
             for (int i = 0; i < 10; i++)
             {
@@ -138,7 +138,7 @@ namespace UnitTests
         [Fact]
         public void RemoveAddAgain()
         {
-            var ld = new LruDictionary<string, int>();
+            var ld = new RecentDictionary<string, int>();
 
             for (int i = 0; i < 10; i++)
             {
@@ -164,7 +164,7 @@ namespace UnitTests
         [Fact]
         public void RemoveAndResize()
         {
-            var ld = new LruDictionary<string, int>();
+            var ld = new RecentDictionary<string, int>();
 
             // Add first 500.
             for (int i = 0; i < 500; i++)
@@ -199,7 +199,7 @@ namespace UnitTests
         [Fact]
         public void RemoveMissing()
         {
-            var ld = new LruDictionary<string, int>();
+            var ld = new RecentDictionary<string, int>();
 
             for (int i = 0; i < 10; i++)
                 ld.Add(i.ToString(), i);
@@ -210,7 +210,7 @@ namespace UnitTests
         [Fact]
         public void CheckEnumerator()
         {
-            var ld = new LruDictionary<string, int>();
+            var ld = new RecentDictionary<string, int>();
 
             for (int i = 0; i < 10; i++)
                 ld.Add(i.ToString(), i);
@@ -232,7 +232,7 @@ namespace UnitTests
         [Fact]
         public void EnumerateEmpty()
         {
-            var ld = new LruDictionary<string, int>();
+            var ld = new RecentDictionary<string, int>();
 
             for (int i = 0; i < 10; i++)
                 ld.Add(i.ToString(), i);
@@ -249,7 +249,7 @@ namespace UnitTests
         [Fact]
         public void EnumerateKeys()
         {
-            var ld = new LruDictionary<int, int>();
+            var ld = new RecentDictionary<int, int>();
             for (int i = 0; i < 100; i++)
                 ld.Add(i, i);
 
@@ -272,7 +272,7 @@ namespace UnitTests
         [Fact]
         public void EnumerateValues()
         {
-            var ld = new LruDictionary<int, int>();
+            var ld = new RecentDictionary<int, int>();
             for (int i = 0; i < 100; i++)
                 ld.Add(i, i);
 
@@ -295,7 +295,7 @@ namespace UnitTests
         [Fact]
         public void ContainsValue()
         {
-            var ld = new LruDictionary<string, int>();
+            var ld = new RecentDictionary<string, int>();
             for (int i = 0; i < 100; i++)
                 ld.Add(i.ToString(), i);
 
@@ -311,7 +311,7 @@ namespace UnitTests
         [Fact]
         public void Trim()
         {
-            var ld = new LruDictionary<string, int>();
+            var ld = new RecentDictionary<string, int>();
             for (int i = 0; i < 1234; i++)
                 ld[i.ToString()] = i;
 
@@ -345,7 +345,7 @@ namespace UnitTests
         public void ZeroHash()
         {
             // Check hashcode of 0, which is a special case.
-            var ld = new LruDictionary<string, string>(100, new BadHasher());
+            var ld = new RecentDictionary<string, string>(100, new BadHasher());
             ld.Add("foo", "bar");
             Assert.Equal("bar", ld["foo"]);
             Assert.True(ld.Remove("foo"));
@@ -355,7 +355,7 @@ namespace UnitTests
         public void LotsOfCollisions()
         {
             // Make sure the dictionary still works, even when there are lots of collisions
-            var ld = new LruDictionary<string, int>(comparer: new BadHasher());
+            var ld = new RecentDictionary<string, int>(comparer: new BadHasher());
 
             for (int i = 0; i < 1_000; i++)
                 ld[i.ToString()] = i;
