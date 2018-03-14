@@ -23,6 +23,21 @@ using System.Diagnostics;
 namespace Scaleout.Collections
 {
     /// <summary>
+    /// Enumeration specifying which entry to evict when calling
+    /// <see cref="LruDictionary{TKey, TValue}.SetAndMaintainCount(TKey, TValue)"/>.
+    /// </summary>
+    public enum RecentDictionaryEvictionMode {
+        /// <summary>
+        /// Remove the least recently accessed dictionary item.
+        /// </summary>
+        LRU,
+        /// <summary>
+        /// Remove the most recently accessed dictionary item.
+        /// </summary>
+        MRU
+    };
+
+    /// <summary>
     /// A collection of keys and values that tracks the order in which entries
     /// are accessed.
     /// </summary>
@@ -48,6 +63,7 @@ namespace Scaleout.Collections
         Node[] _buckets;
         Node _lruHead;
         Node _lruTail;
+        RecentDictionaryEvictionMode _evictMode = RecentDictionaryEvictionMode.LRU;
         private int _count = 0;
         private int _bucketMask; // applied to hashes to select buckets (faster than modulo, but requires a good hash function).
 
@@ -65,6 +81,7 @@ namespace Scaleout.Collections
         Node _freeList;
         int _freeCount;
 
+        
         // Node containing an item in the collection.
         private class Node
         {
@@ -152,38 +169,56 @@ namespace Scaleout.Collections
 
         /// <summary>
         /// Initializes a new instance of the dictionary that is empty, 
-        /// has the default initial capacity, and uses the default equality comparer for the key type.
+        /// performs LRU eviction, has the default initial capacity, 
+        /// and uses the default equality comparer for the key type.
         /// </summary>
-        public LruDictionary() : this(0, null)
+        public LruDictionary() : this(0, RecentDictionaryEvictionMode.LRU, null)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the dictionary that is empty, 
-        /// has the specified initial capacity, and uses the default equality comparer for the key type.
+        /// performs LRU eviction, has the specified initial capacity, 
+        /// and uses the default equality comparer for the key type.
         /// </summary>
         /// <param name="capacity">
         /// The initial number of elements that the dictionary can contain before resizing internally.
         /// </param>
-        public LruDictionary(int capacity) : this(capacity, null)
+        public LruDictionary(int capacity) : this(capacity, RecentDictionaryEvictionMode.LRU, null)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the dictionary that is empty, 
-        /// has the default initial capacity, and uses the specified equality comparer for the key type.
+        /// uses the specified eviction mode,
+        /// has the default initial capacity, 
+        /// and uses the default equality comparer for the key type.
+        /// </summary>
+        /// <param name="evictionMode">
+        /// Specifies whether the most recent or least recent entry is evicted when
+        /// <see cref="SetAndMaintainCount(TKey, TValue)"/> is called.
+        /// </param>
+        public LruDictionary(RecentDictionaryEvictionMode evictionMode) : this(0, evictionMode, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the dictionary that is empty, 
+        /// performs LRU eviction, has the default initial capacity, 
+        /// and uses the specified equality comparer for the key type.
         /// </summary>
         /// <param name="comparer">
         /// The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, 
         /// or null to use the default comparer for the type of the key.
         /// </param>
-        public LruDictionary(IEqualityComparer<TKey> comparer) : this(0, comparer)
+        public LruDictionary(IEqualityComparer<TKey> comparer) : this(0, RecentDictionaryEvictionMode.LRU, comparer)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the dictionary with the specified  
-        /// initial capacity and uses the equality comparer for the key type.
+        /// initial capacity, performs LRU eviction,
+        /// and uses the provided equality comparer for the key type.
         /// </summary>
         /// <param name="capacity">
         /// The initial number of elements that the dictionary can contain before resizing internally.
@@ -192,12 +227,33 @@ namespace Scaleout.Collections
         /// The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, 
         /// or null to use the default comparer for the type of the key.
         /// </param>
-        public LruDictionary(int capacity, IEqualityComparer<TKey> comparer)
+        public LruDictionary(int capacity, IEqualityComparer<TKey> comparer) : this(capacity, RecentDictionaryEvictionMode.LRU, comparer)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the dictionary with the specified  
+        /// initial capacity, the specified eviction, and uses the 
+        /// provide equality comparer for the key type.
+        /// </summary>
+        /// <param name="capacity">
+        /// The initial number of elements that the dictionary can contain before resizing internally.
+        /// </param>
+        /// <param name="evictionMode">
+        /// Specifies whether the most recent or least recent entry is evicted when
+        /// <see cref="SetAndMaintainCount(TKey, TValue)"/> is called.
+        /// </param>
+        /// <param name="comparer">
+        /// The <see cref="IEqualityComparer{T}"/> implementation to use when comparing keys, 
+        /// or null to use the default comparer for the type of the key.
+        /// </param>
+        public LruDictionary(int capacity, RecentDictionaryEvictionMode evictionMode, IEqualityComparer<TKey> comparer)
         {
             if (capacity < 0 || capacity > (1 << 30))
                 throw new ArgumentOutOfRangeException(nameof(capacity), capacity, "Capacity must be between 0 and 1,073,741,824 (inclusive)");
 
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
+            _evictMode = evictionMode;
 
             int initialBucketCount;
             if (capacity <= 4)
@@ -311,14 +367,28 @@ namespace Scaleout.Collections
                     break;
             }
 
-            if (maintainCount && _lruTail != null)
+            if (maintainCount && _count > 0)
             {
-                // remove the least recently used
-                var nodeToRemove = _lruTail;
-                if (nodeToRemove.LruPrevious != null)
+                Node nodeToRemove;
+                if (_evictMode == RecentDictionaryEvictionMode.LRU)
                 {
-                    nodeToRemove.LruPrevious.LruNext = null;
-                    _lruTail = nodeToRemove.LruPrevious;
+                    // remove the least recently used
+                    nodeToRemove = _lruTail;
+                    if (nodeToRemove.LruPrevious != null)
+                    {
+                        nodeToRemove.LruPrevious.LruNext = null;
+                        _lruTail = nodeToRemove.LruPrevious;
+                    }
+                }
+                else
+                {
+                    // remove the most recently used
+                    nodeToRemove = _lruHead;
+                    if (nodeToRemove.LruNext != null)
+                    {
+                        nodeToRemove.LruNext.LruPrevious = null;
+                        _lruHead = nodeToRemove.LruNext;
+                    }
                 }
                 RemoveNode(nodeToRemove, nodeToRemove.HashCode & _bucketMask);
             }
@@ -572,7 +642,8 @@ namespace Scaleout.Collections
         }
 
         /// <summary>
-        /// Determines whether the dictionary contains the specified key.
+        /// Determines whether the dictionary contains the specified key. The order of
+        /// items in the dictionary is not modified.
         /// </summary>
         /// <param name="key">The key to locate</param>
         /// <returns>true if the dictionary contains an element with the specified key; otherwise, false.</returns>
@@ -582,7 +653,8 @@ namespace Scaleout.Collections
         }
 
         /// <summary>
-        /// Determines whether the dictionary contains the specified value.
+        /// Determines whether the dictionary contains the specified value. The order of
+        /// items in the dictionary is not modified.
         /// </summary>
         /// <param name="value">The value to locate</param>
         /// <returns>true if the dictionary contains an element with the specified value; otherwise, false.</returns>
@@ -672,6 +744,42 @@ namespace Scaleout.Collections
         }
 
         /// <summary>
+        /// Gets the most recently accessed item in the dictionary. The order of
+        /// items in the dictionary is not modified.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is empty.
+        /// </exception>
+        public KeyValuePair<TKey, TValue> MostRecent
+        {
+            get
+            {
+                if (_count > 0)
+                    return new KeyValuePair<TKey, TValue>(_lruHead.Key, _lruHead.Value);
+                else
+                    throw new InvalidOperationException("Dictionary is empty.");
+            }
+        }
+
+        /// <summary>
+        /// Gets the least recently accessed item in the dictionary. The order of
+        /// items in the dictionary is not modified.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is empty.
+        /// </exception>
+        public KeyValuePair<TKey, TValue> LeastRecent
+        {
+            get
+            {
+                if (_count > 0)
+                    return new KeyValuePair<TKey, TValue>(_lruTail.Key, _lruTail.Value);
+                else
+                    throw new InvalidOperationException("Dictionary is empty.");
+            }
+        }
+
+        /// <summary>
         /// Removes the value with the specified key from the dictionary.
         /// </summary>
         /// <param name="key">key of the element to remove</param>
@@ -716,6 +824,54 @@ namespace Scaleout.Collections
             RemoveFromLru(nodeToRemove);
             RemoveNode(nodeToRemove, nodeToRemove.HashCode & _bucketMask);
             return true;
+        }
+
+        /// <summary>
+        /// Gets and removes the least recently accessed item from the dictionary.
+        /// </summary>
+        /// <returns>The dictionary entry that was removed.</returns>
+        public KeyValuePair<TKey, TValue> RemoveAndGetLeastRecent()
+        {
+            if (_count == 0)
+                throw new InvalidOperationException("Dictionary is empty.");
+
+            var nodeToRemove = _lruTail;
+            var ret = new KeyValuePair<TKey, TValue>(nodeToRemove.Key, nodeToRemove.Value);
+            RemoveFromLru(nodeToRemove);
+            RemoveNode(nodeToRemove, nodeToRemove.HashCode & _bucketMask);
+            return ret;
+        }
+
+        /// <summary>
+        /// Removes the most recently accessed item from the dictionary.
+        /// </summary>
+        /// <returns>true if an item was successfully removed, or false if the dictionary is empty.</returns>
+        public bool RemoveMostRecent()
+        {
+            if (_count == 0)
+                return false;
+
+
+            var nodeToRemove = _lruHead;
+            RemoveFromLru(nodeToRemove);
+            RemoveNode(nodeToRemove, nodeToRemove.HashCode & _bucketMask);
+            return true;
+        }
+
+        /// <summary>
+        /// Gets and removes the most recently accessed item from the dictionary.
+        /// </summary>
+        /// <returns>The dictionary entry that was removed.</returns>
+        public KeyValuePair<TKey, TValue> RemoveAndGetMostRecent()
+        {
+            if (_count == 0)
+                throw new InvalidOperationException("Dictionary is empty.");
+
+            var nodeToRemove = _lruHead;
+            var ret = new KeyValuePair<TKey, TValue>(nodeToRemove.Key, nodeToRemove.Value);
+            RemoveFromLru(nodeToRemove);
+            RemoveNode(nodeToRemove, nodeToRemove.HashCode & _bucketMask);
+            return ret;
         }
 
         private void RemoveNode(Node node, int bucketIndex)
