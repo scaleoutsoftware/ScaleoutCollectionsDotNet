@@ -1,0 +1,266 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<HelpKI>
+  <HelpKINode Title="Add method">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).Add Method " Url="html/c1e4e4e1-9a4e-c4cd-70ef-9240d4d9e4c4.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).Add Method " Url="html/96523260-6416-6d4f-dd91-b56d426343a1.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Clear method">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).Clear Method " Url="html/9f1321ef-4cf8-4f07-9b64-b7abaf71e395.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).Clear Method " Url="html/f5f89f71-6231-ca36-8c48-152d273e0cd6.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ContainsKey method">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).ContainsKey Method " Url="html/e7934ac7-8b1a-2062-70ac-b231e23fdc5b.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).ContainsKey Method " Url="html/6c694d06-7989-8d6d-74b4-5b70e20cb4ce.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ContainsValue method">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).ContainsValue Method " Url="html/ad2dd6ce-491a-7415-9ead-eccce2f9faa0.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).ContainsValue Method " Url="html/646d02ef-9e33-802e-a55c-2f24a02748de.htm" />
+  </HelpKINode>
+  <HelpKINode Title="CopyTo method">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).KeyCollection.CopyTo Method " Url="html/4a069e45-d24f-ee97-4966-4f9edccc1bc4.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).KeyCollection.CopyTo Method " Url="html/99ab61a3-9b8e-9558-3bb3-9eb82914aeab.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Count property">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).Count Property " Url="html/5c378cc2-db77-ffe0-03c4-fed0e9faf480.htm" />
+    <HelpKINode Title="RecentDictionary(TKey, TValue).KeyCollection.Count Property " Url="html/6bee4328-b5db-03cb-2bcc-affa160540a2.htm" />
+    <HelpKINode Title="RecentDictionary(TKey, TValue).ValueCollection.Count Property " Url="html/592783fa-7055-bb56-ed9c-2f97652e432a.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).Count Property " Url="html/a6c5fe94-edd1-be68-182d-0ceff54c6ea6.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).KeyCollection.Count Property " Url="html/89ac22f4-300d-9a35-b080-fb5fa86fc983.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).ValueCollection.Count Property " Url="html/c78551e0-a07a-2e07-ba8d-1481563ae8a5.htm" />
+  </HelpKINode>
+  <HelpKINode Title="GetEnumerator method">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).GetEnumerator Method " Url="html/1dda25c1-1359-3b34-2725-c37b4cea29b7.htm" />
+    <HelpKINode Title="RecentDictionary(TKey, TValue).KeyCollection.GetEnumerator Method " Url="html/44ecafde-d0e9-6fb8-259f-70eaa4f3373f.htm" />
+    <HelpKINode Title="RecentDictionary(TKey, TValue).ValueCollection.GetEnumerator Method " Url="html/aa548f5c-66d9-9d76-9fe0-31f230738e79.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).GetEnumerator Method " Url="html/05c1f82b-ae60-4ad0-b252-ccfa632a0d96.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).KeyCollection.GetEnumerator Method " Url="html/c2962831-b4ba-6875-ccf4-36a86e799f7a.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).ValueCollection.GetEnumerator Method " Url="html/f9ddff89-4221-a4d6-c5d7-773e9c75f9a0.htm" />
+  </HelpKINode>
+  <HelpKINode Title="GetRandomKey method" Url="html/1d005f0a-d838-6941-d1b5-a4186f3ff95b.htm" />
+  <HelpKINode Title="GetRandomKeyAndValue method" Url="html/ab8b9020-caf0-38b4-2d3c-0544e1abb5dd.htm" />
+  <HelpKINode Title="GetRandomValue method" Url="html/a9564f14-a708-8d8e-3a67-80cc9a436eb2.htm" />
+  <HelpKINode Title="Item property">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).Item Property " Url="html/38b0600b-91ff-f892-5a43-4cabd9f0c3bb.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).Item Property " Url="html/b90892e9-65cc-6dcb-d80d-0f54da97fb91.htm" />
+  </HelpKINode>
+  <HelpKINode Title="KeyCollection class">
+    <HelpKINode Title="methods" Url="html/e8d25f24-9686-4462-f505-0c01d3f898e5.htm" />
+    <HelpKINode Title="methods" Url="html/e4bd9cfc-1e84-2636-6ba4-9d88a45ab02b.htm" />
+    <HelpKINode Title="properties" Url="html/73e4a602-b23a-db12-5087-41fe418ac691.htm" />
+    <HelpKINode Title="properties" Url="html/3346401b-4c90-2d9d-f953-4c6f06498880.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Keys property">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).Keys Property " Url="html/627af68f-ad9f-dac8-6be9-476140bf5ea2.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).Keys Property " Url="html/5694bf76-f81d-c430-2c2f-c5535bb09832.htm" />
+  </HelpKINode>
+  <HelpKINode Title="LeastRecent property" Url="html/c406acff-ea25-0432-b31b-d48fbce8c63c.htm" />
+  <HelpKINode Title="LRU enumeration member" Url="html/59687ace-abdf-9198-2bad-f14b1be8758d.htm" />
+  <HelpKINode Title="MostRecent property" Url="html/a50bbc82-726c-3d98-66ef-17eee2396f83.htm" />
+  <HelpKINode Title="MRU enumeration member" Url="html/59687ace-abdf-9198-2bad-f14b1be8758d.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue) class">
+    <HelpKINode Title="RecentDictionary(TKey, TValue) Class" Url="html/ea9f01b3-f389-21b7-b763-b1c3f18bc366.htm" />
+    <HelpKINode Title="about RecentDictionary(Of TKey, TValue) class" Url="html/ea9f01b3-f389-21b7-b763-b1c3f18bc366.htm" />
+    <HelpKINode Title="constructor" Url="html/3b99316a-61e4-03fc-ce9f-34070df8b1df.htm" />
+    <HelpKINode Title="methods" Url="html/e28bdfbb-7049-50db-558d-93742f662181.htm" />
+    <HelpKINode Title="properties" Url="html/26a8e586-b106-6710-2af0-89f6c2608435.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).Add method" Url="html/c1e4e4e1-9a4e-c4cd-70ef-9240d4d9e4c4.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).Clear method" Url="html/9f1321ef-4cf8-4f07-9b64-b7abaf71e395.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).ContainsKey method" Url="html/e7934ac7-8b1a-2062-70ac-b231e23fdc5b.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).ContainsValue method" Url="html/ad2dd6ce-491a-7415-9ead-eccce2f9faa0.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).Count property" Url="html/5c378cc2-db77-ffe0-03c4-fed0e9faf480.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).GetEnumerator method" Url="html/1dda25c1-1359-3b34-2725-c37b4cea29b7.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).Item property" Url="html/38b0600b-91ff-f892-5a43-4cabd9f0c3bb.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).KeyCollection class">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).KeyCollection Class" Url="html/76e4636b-c260-bb19-79c5-1f7d438d9b00.htm" />
+    <HelpKINode Title="about RecentDictionary(Of TKey, TValue).KeyCollection class" Url="html/76e4636b-c260-bb19-79c5-1f7d438d9b00.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).KeyCollection.CopyTo method" Url="html/4a069e45-d24f-ee97-4966-4f9edccc1bc4.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).KeyCollection.Count property" Url="html/6bee4328-b5db-03cb-2bcc-affa160540a2.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).KeyCollection.GetEnumerator method" Url="html/44ecafde-d0e9-6fb8-259f-70eaa4f3373f.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).Keys property" Url="html/627af68f-ad9f-dac8-6be9-476140bf5ea2.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).LeastRecent property" Url="html/c406acff-ea25-0432-b31b-d48fbce8c63c.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).MostRecent property" Url="html/a50bbc82-726c-3d98-66ef-17eee2396f83.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).RecentDictionary constructor" Url="html/3b99316a-61e4-03fc-ce9f-34070df8b1df.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).Remove method" Url="html/a9d354f4-41e5-fa0c-02ce-e20df67245e6.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).RemoveAndGetLeastRecent method" Url="html/4ac2f8ac-dd38-6a64-e842-5dc5901f964c.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).RemoveAndGetMostRecent method" Url="html/f9bebff2-b95c-d9a6-733a-dadb48dc407e.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).RemoveLeastRecent method" Url="html/83f35b6d-7ef9-6ed1-5568-340217888243.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).RemoveMostRecent method" Url="html/b1e483d7-3134-31df-e1da-46b2ba472f43.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).SetAndMaintainCount method" Url="html/de3c7444-a9dd-d3c3-8094-89377645eb79.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).Trim method" Url="html/7ac24d14-844e-a27b-8685-5228a5cd1e8a.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).TryGetValue method" Url="html/f7bc05ef-dc32-b29b-6ff1-7a72fba4f1c7.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).ValueCollection class">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).ValueCollection Class" Url="html/203f07f8-ab1b-266f-d001-3da15c29ee22.htm" />
+    <HelpKINode Title="about RecentDictionary(Of TKey, TValue).ValueCollection class" Url="html/203f07f8-ab1b-266f-d001-3da15c29ee22.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).ValueCollection.Count property" Url="html/592783fa-7055-bb56-ed9c-2f97652e432a.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).ValueCollection.GetEnumerator method" Url="html/aa548f5c-66d9-9d76-9fe0-31f230738e79.htm" />
+  <HelpKINode Title="RecentDictionary(Of TKey, TValue).Values property" Url="html/619493d7-433e-f391-8006-b01f618fd1ab.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt; class">
+    <HelpKINode Title="RecentDictionary(TKey, TValue) Class" Url="html/ea9f01b3-f389-21b7-b763-b1c3f18bc366.htm" />
+    <HelpKINode Title="about RecentDictionary&lt;TKey, TValue&gt; class" Url="html/ea9f01b3-f389-21b7-b763-b1c3f18bc366.htm" />
+    <HelpKINode Title="constructor" Url="html/3b99316a-61e4-03fc-ce9f-34070df8b1df.htm" />
+    <HelpKINode Title="methods" Url="html/e28bdfbb-7049-50db-558d-93742f662181.htm" />
+    <HelpKINode Title="properties" Url="html/26a8e586-b106-6710-2af0-89f6c2608435.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.Add method" Url="html/c1e4e4e1-9a4e-c4cd-70ef-9240d4d9e4c4.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.Clear method" Url="html/9f1321ef-4cf8-4f07-9b64-b7abaf71e395.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.ContainsKey method" Url="html/e7934ac7-8b1a-2062-70ac-b231e23fdc5b.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.ContainsValue method" Url="html/ad2dd6ce-491a-7415-9ead-eccce2f9faa0.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.Count property" Url="html/5c378cc2-db77-ffe0-03c4-fed0e9faf480.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.GetEnumerator method" Url="html/1dda25c1-1359-3b34-2725-c37b4cea29b7.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.Item property" Url="html/38b0600b-91ff-f892-5a43-4cabd9f0c3bb.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.KeyCollection class">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).KeyCollection Class" Url="html/76e4636b-c260-bb19-79c5-1f7d438d9b00.htm" />
+    <HelpKINode Title="about RecentDictionary&lt;TKey, TValue&gt;.KeyCollection class" Url="html/76e4636b-c260-bb19-79c5-1f7d438d9b00.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.KeyCollection.CopyTo method" Url="html/4a069e45-d24f-ee97-4966-4f9edccc1bc4.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.KeyCollection.Count property" Url="html/6bee4328-b5db-03cb-2bcc-affa160540a2.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.KeyCollection.GetEnumerator method" Url="html/44ecafde-d0e9-6fb8-259f-70eaa4f3373f.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.Keys property" Url="html/627af68f-ad9f-dac8-6be9-476140bf5ea2.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.LeastRecent property" Url="html/c406acff-ea25-0432-b31b-d48fbce8c63c.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.MostRecent property" Url="html/a50bbc82-726c-3d98-66ef-17eee2396f83.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.RecentDictionary constructor" Url="html/3b99316a-61e4-03fc-ce9f-34070df8b1df.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.Remove method" Url="html/a9d354f4-41e5-fa0c-02ce-e20df67245e6.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.RemoveAndGetLeastRecent method" Url="html/4ac2f8ac-dd38-6a64-e842-5dc5901f964c.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.RemoveAndGetMostRecent method" Url="html/f9bebff2-b95c-d9a6-733a-dadb48dc407e.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.RemoveLeastRecent method" Url="html/83f35b6d-7ef9-6ed1-5568-340217888243.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.RemoveMostRecent method" Url="html/b1e483d7-3134-31df-e1da-46b2ba472f43.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.SetAndMaintainCount method" Url="html/de3c7444-a9dd-d3c3-8094-89377645eb79.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.Trim method" Url="html/7ac24d14-844e-a27b-8685-5228a5cd1e8a.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.TryGetValue method" Url="html/f7bc05ef-dc32-b29b-6ff1-7a72fba4f1c7.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.ValueCollection class">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).ValueCollection Class" Url="html/203f07f8-ab1b-266f-d001-3da15c29ee22.htm" />
+    <HelpKINode Title="about RecentDictionary&lt;TKey, TValue&gt;.ValueCollection class" Url="html/203f07f8-ab1b-266f-d001-3da15c29ee22.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.ValueCollection.Count property" Url="html/592783fa-7055-bb56-ed9c-2f97652e432a.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.ValueCollection.GetEnumerator method" Url="html/aa548f5c-66d9-9d76-9fe0-31f230738e79.htm" />
+  <HelpKINode Title="RecentDictionary&lt;TKey, TValue&gt;.Values property" Url="html/619493d7-433e-f391-8006-b01f618fd1ab.htm" />
+  <HelpKINode Title="RecentDictionaryEvictionMode enumeration" Url="html/59687ace-abdf-9198-2bad-f14b1be8758d.htm" />
+  <HelpKINode Title="Remove method">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).Remove Method " Url="html/a9d354f4-41e5-fa0c-02ce-e20df67245e6.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).Remove Method " Url="html/3e963a92-551e-3511-71a0-c65e21b4f8e2.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RemoveAndGetLeastRecent method" Url="html/4ac2f8ac-dd38-6a64-e842-5dc5901f964c.htm" />
+  <HelpKINode Title="RemoveAndGetMostRecent method" Url="html/f9bebff2-b95c-d9a6-733a-dadb48dc407e.htm" />
+  <HelpKINode Title="RemoveLeastRecent method" Url="html/83f35b6d-7ef9-6ed1-5568-340217888243.htm" />
+  <HelpKINode Title="RemoveMostRecent method" Url="html/b1e483d7-3134-31df-e1da-46b2ba472f43.htm" />
+  <HelpKINode Title="RemoveRandom method" Url="html/1295e3ca-2c2b-a232-17c5-6726f05dc8f2.htm" />
+  <HelpKINode Title="RemoveRandomAndGet method" Url="html/4ca123e5-f5d8-98cd-3923-e3b2e7a9c889.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue) class">
+    <HelpKINode Title="RouletteDictionary(TKey, TValue) Class" Url="html/835bf4de-10d5-9283-e0d4-95918772829c.htm" />
+    <HelpKINode Title="about RouletteDictionary(Of TKey, TValue) class" Url="html/835bf4de-10d5-9283-e0d4-95918772829c.htm" />
+    <HelpKINode Title="constructor" Url="html/96285dd8-c3f3-1a25-b2fe-50e376cc7f8f.htm" />
+    <HelpKINode Title="methods" Url="html/6def7909-0045-1078-c33b-a2a3faa9f54e.htm" />
+    <HelpKINode Title="properties" Url="html/c654ddcc-dfd9-7bba-30b0-a3d98a1625bb.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).Add method" Url="html/96523260-6416-6d4f-dd91-b56d426343a1.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).Clear method" Url="html/f5f89f71-6231-ca36-8c48-152d273e0cd6.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).ContainsKey method" Url="html/6c694d06-7989-8d6d-74b4-5b70e20cb4ce.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).ContainsValue method" Url="html/646d02ef-9e33-802e-a55c-2f24a02748de.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).Count property" Url="html/a6c5fe94-edd1-be68-182d-0ceff54c6ea6.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).GetEnumerator method" Url="html/05c1f82b-ae60-4ad0-b252-ccfa632a0d96.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).GetRandomKey method" Url="html/1d005f0a-d838-6941-d1b5-a4186f3ff95b.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).GetRandomKeyAndValue method" Url="html/ab8b9020-caf0-38b4-2d3c-0544e1abb5dd.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).GetRandomValue method" Url="html/a9564f14-a708-8d8e-3a67-80cc9a436eb2.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).Item property" Url="html/b90892e9-65cc-6dcb-d80d-0f54da97fb91.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).KeyCollection class">
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).KeyCollection Class" Url="html/89944766-4950-d7b2-a605-72904a554e73.htm" />
+    <HelpKINode Title="about RouletteDictionary(Of TKey, TValue).KeyCollection class" Url="html/89944766-4950-d7b2-a605-72904a554e73.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).KeyCollection.CopyTo method" Url="html/99ab61a3-9b8e-9558-3bb3-9eb82914aeab.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).KeyCollection.Count property" Url="html/89ac22f4-300d-9a35-b080-fb5fa86fc983.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).KeyCollection.GetEnumerator method" Url="html/c2962831-b4ba-6875-ccf4-36a86e799f7a.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).Keys property" Url="html/5694bf76-f81d-c430-2c2f-c5535bb09832.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).Remove method" Url="html/3e963a92-551e-3511-71a0-c65e21b4f8e2.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).RemoveRandom method" Url="html/1295e3ca-2c2b-a232-17c5-6726f05dc8f2.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).RemoveRandomAndGet method" Url="html/4ca123e5-f5d8-98cd-3923-e3b2e7a9c889.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).RouletteDictionary constructor" Url="html/96285dd8-c3f3-1a25-b2fe-50e376cc7f8f.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).SetAndMaintainCount method" Url="html/cf4033cb-6b75-4c7c-c197-c29f6a53f958.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).Trim method" Url="html/42006424-bc7d-ab16-8587-86d95933d89d.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).TryGetValue method" Url="html/470c7d51-2de4-5e7b-4b6d-241037ecd102.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).ValueCollection class">
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).ValueCollection Class" Url="html/a82661ca-89d9-d75a-7702-ec3652e14138.htm" />
+    <HelpKINode Title="about RouletteDictionary(Of TKey, TValue).ValueCollection class" Url="html/a82661ca-89d9-d75a-7702-ec3652e14138.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).ValueCollection.Count property" Url="html/c78551e0-a07a-2e07-ba8d-1481563ae8a5.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).ValueCollection.GetEnumerator method" Url="html/f9ddff89-4221-a4d6-c5d7-773e9c75f9a0.htm" />
+  <HelpKINode Title="RouletteDictionary(Of TKey, TValue).Values property" Url="html/da8632b7-594b-341f-d15b-f80288b44863.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt; class">
+    <HelpKINode Title="RouletteDictionary(TKey, TValue) Class" Url="html/835bf4de-10d5-9283-e0d4-95918772829c.htm" />
+    <HelpKINode Title="about RouletteDictionary&lt;TKey, TValue&gt; class" Url="html/835bf4de-10d5-9283-e0d4-95918772829c.htm" />
+    <HelpKINode Title="constructor" Url="html/96285dd8-c3f3-1a25-b2fe-50e376cc7f8f.htm" />
+    <HelpKINode Title="methods" Url="html/6def7909-0045-1078-c33b-a2a3faa9f54e.htm" />
+    <HelpKINode Title="properties" Url="html/c654ddcc-dfd9-7bba-30b0-a3d98a1625bb.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.Add method" Url="html/96523260-6416-6d4f-dd91-b56d426343a1.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.Clear method" Url="html/f5f89f71-6231-ca36-8c48-152d273e0cd6.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.ContainsKey method" Url="html/6c694d06-7989-8d6d-74b4-5b70e20cb4ce.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.ContainsValue method" Url="html/646d02ef-9e33-802e-a55c-2f24a02748de.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.Count property" Url="html/a6c5fe94-edd1-be68-182d-0ceff54c6ea6.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.GetEnumerator method" Url="html/05c1f82b-ae60-4ad0-b252-ccfa632a0d96.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.GetRandomKey method" Url="html/1d005f0a-d838-6941-d1b5-a4186f3ff95b.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.GetRandomKeyAndValue method" Url="html/ab8b9020-caf0-38b4-2d3c-0544e1abb5dd.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.GetRandomValue method" Url="html/a9564f14-a708-8d8e-3a67-80cc9a436eb2.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.Item property" Url="html/b90892e9-65cc-6dcb-d80d-0f54da97fb91.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.KeyCollection class">
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).KeyCollection Class" Url="html/89944766-4950-d7b2-a605-72904a554e73.htm" />
+    <HelpKINode Title="about RouletteDictionary&lt;TKey, TValue&gt;.KeyCollection class" Url="html/89944766-4950-d7b2-a605-72904a554e73.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.KeyCollection.CopyTo method" Url="html/99ab61a3-9b8e-9558-3bb3-9eb82914aeab.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.KeyCollection.Count property" Url="html/89ac22f4-300d-9a35-b080-fb5fa86fc983.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.KeyCollection.GetEnumerator method" Url="html/c2962831-b4ba-6875-ccf4-36a86e799f7a.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.Keys property" Url="html/5694bf76-f81d-c430-2c2f-c5535bb09832.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.Remove method" Url="html/3e963a92-551e-3511-71a0-c65e21b4f8e2.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.RemoveRandom method" Url="html/1295e3ca-2c2b-a232-17c5-6726f05dc8f2.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.RemoveRandomAndGet method" Url="html/4ca123e5-f5d8-98cd-3923-e3b2e7a9c889.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.RouletteDictionary constructor" Url="html/96285dd8-c3f3-1a25-b2fe-50e376cc7f8f.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.SetAndMaintainCount method" Url="html/cf4033cb-6b75-4c7c-c197-c29f6a53f958.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.Trim method" Url="html/42006424-bc7d-ab16-8587-86d95933d89d.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.TryGetValue method" Url="html/470c7d51-2de4-5e7b-4b6d-241037ecd102.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.ValueCollection class">
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).ValueCollection Class" Url="html/a82661ca-89d9-d75a-7702-ec3652e14138.htm" />
+    <HelpKINode Title="about RouletteDictionary&lt;TKey, TValue&gt;.ValueCollection class" Url="html/a82661ca-89d9-d75a-7702-ec3652e14138.htm" />
+  </HelpKINode>
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.ValueCollection.Count property" Url="html/c78551e0-a07a-2e07-ba8d-1481563ae8a5.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.ValueCollection.GetEnumerator method" Url="html/f9ddff89-4221-a4d6-c5d7-773e9c75f9a0.htm" />
+  <HelpKINode Title="RouletteDictionary&lt;TKey, TValue&gt;.Values property" Url="html/da8632b7-594b-341f-d15b-f80288b44863.htm" />
+  <HelpKINode Title="Scaleout.Collections namespace" Url="html/d42b61bc-651f-9e56-692f-f33eb61f6c41.htm" />
+  <HelpKINode Title="Scaleout.Collections.RecentDictionary(Of TKey, TValue) class" Url="html/ea9f01b3-f389-21b7-b763-b1c3f18bc366.htm" />
+  <HelpKINode Title="Scaleout.Collections.RecentDictionary(Of TKey, TValue).KeyCollection class" Url="html/76e4636b-c260-bb19-79c5-1f7d438d9b00.htm" />
+  <HelpKINode Title="Scaleout.Collections.RecentDictionary(Of TKey, TValue).ValueCollection class" Url="html/203f07f8-ab1b-266f-d001-3da15c29ee22.htm" />
+  <HelpKINode Title="Scaleout.Collections.RecentDictionary&lt;TKey, TValue&gt; class" Url="html/ea9f01b3-f389-21b7-b763-b1c3f18bc366.htm" />
+  <HelpKINode Title="Scaleout.Collections.RecentDictionary&lt;TKey, TValue&gt;.KeyCollection class" Url="html/76e4636b-c260-bb19-79c5-1f7d438d9b00.htm" />
+  <HelpKINode Title="Scaleout.Collections.RecentDictionary&lt;TKey, TValue&gt;.ValueCollection class" Url="html/203f07f8-ab1b-266f-d001-3da15c29ee22.htm" />
+  <HelpKINode Title="Scaleout.Collections.RecentDictionaryEvictionMode enumeration" Url="html/59687ace-abdf-9198-2bad-f14b1be8758d.htm" />
+  <HelpKINode Title="Scaleout.Collections.RouletteDictionary(Of TKey, TValue) class" Url="html/835bf4de-10d5-9283-e0d4-95918772829c.htm" />
+  <HelpKINode Title="Scaleout.Collections.RouletteDictionary(Of TKey, TValue).KeyCollection class" Url="html/89944766-4950-d7b2-a605-72904a554e73.htm" />
+  <HelpKINode Title="Scaleout.Collections.RouletteDictionary(Of TKey, TValue).ValueCollection class" Url="html/a82661ca-89d9-d75a-7702-ec3652e14138.htm" />
+  <HelpKINode Title="Scaleout.Collections.RouletteDictionary&lt;TKey, TValue&gt; class" Url="html/835bf4de-10d5-9283-e0d4-95918772829c.htm" />
+  <HelpKINode Title="Scaleout.Collections.RouletteDictionary&lt;TKey, TValue&gt;.KeyCollection class" Url="html/89944766-4950-d7b2-a605-72904a554e73.htm" />
+  <HelpKINode Title="Scaleout.Collections.RouletteDictionary&lt;TKey, TValue&gt;.ValueCollection class" Url="html/a82661ca-89d9-d75a-7702-ec3652e14138.htm" />
+  <HelpKINode Title="SetAndMaintainCount method">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).SetAndMaintainCount Method " Url="html/de3c7444-a9dd-d3c3-8094-89377645eb79.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).SetAndMaintainCount Method " Url="html/cf4033cb-6b75-4c7c-c197-c29f6a53f958.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Trim method">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).Trim Method " Url="html/7ac24d14-844e-a27b-8685-5228a5cd1e8a.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).Trim Method " Url="html/42006424-bc7d-ab16-8587-86d95933d89d.htm" />
+  </HelpKINode>
+  <HelpKINode Title="TryGetValue method">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).TryGetValue Method " Url="html/f7bc05ef-dc32-b29b-6ff1-7a72fba4f1c7.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).TryGetValue Method " Url="html/470c7d51-2de4-5e7b-4b6d-241037ecd102.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ValueCollection class">
+    <HelpKINode Title="methods" Url="html/552f2609-2ca7-8817-8c80-662eee423633.htm" />
+    <HelpKINode Title="methods" Url="html/034c2c0a-c315-0d6a-d8c5-8c9e24ef44a3.htm" />
+    <HelpKINode Title="properties" Url="html/85ed6895-570b-a119-aab3-7fce9dbd0f3f.htm" />
+    <HelpKINode Title="properties" Url="html/de87567b-ea92-5f8b-0671-55ca075f6d30.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Values property">
+    <HelpKINode Title="RecentDictionary(TKey, TValue).Values Property " Url="html/619493d7-433e-f391-8006-b01f618fd1ab.htm" />
+    <HelpKINode Title="RouletteDictionary(TKey, TValue).Values Property " Url="html/da8632b7-594b-341f-d15b-f80288b44863.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Welcome" Url="html/5461d4c8-dc03-4170-b521-c57a739abf38.htm" />
+</HelpKI>

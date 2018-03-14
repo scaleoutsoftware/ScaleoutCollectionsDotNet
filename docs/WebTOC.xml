@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<HelpTOC>
+
+  <HelpTOCNode Title="Welcome to the [TODO: Add project name]" Url="html/5461d4c8-dc03-4170-b521-c57a739abf38.htm" />
+  <HelpTOCNode Id="fd491a4e-d5cb-4b37-b6be-5022eb9623c1" Title="Scaleout.Collections" Url="html/d42b61bc-651f-9e56-692f-f33eb61f6c41.htm">
+    <HelpTOCNode Id="ec91e689-9bb6-4a63-8650-29424a8b0014" Title="RecentDictionary(TKey, TValue) Class" Url="html/ea9f01b3-f389-21b7-b763-b1c3f18bc366.htm">
+      <HelpTOCNode Id="0741f09f-cce1-46ac-94c7-999eea8c437f" Title="RecentDictionary(TKey, TValue) Constructor " Url="html/3b99316a-61e4-03fc-ce9f-34070df8b1df.htm">
+        <HelpTOCNode Title="RecentDictionary(TKey, TValue) Constructor " Url="html/2ad0d6bb-edb9-ff69-fb5e-6356d1607514.htm" />
+        <HelpTOCNode Title="RecentDictionary(TKey, TValue) Constructor (IEqualityComparer(TKey))" Url="html/5e38538d-329f-09a7-efb6-ee36e98a4944.htm" />
+        <HelpTOCNode Title="RecentDictionary(TKey, TValue) Constructor (Int32)" Url="html/93bc7e70-b426-7568-9c7e-834b37896ff1.htm" />
+        <HelpTOCNode Title="RecentDictionary(TKey, TValue) Constructor (RecentDictionaryEvictionMode)" Url="html/77a705a9-3814-a834-5b4b-7b9f5277f060.htm" />
+        <HelpTOCNode Title="RecentDictionary(TKey, TValue) Constructor (Int32, IEqualityComparer(TKey))" Url="html/7b3fe4a2-04e1-0b03-8eb7-6ff21c6fc490.htm" />
+        <HelpTOCNode Title="RecentDictionary(TKey, TValue) Constructor (Int32, RecentDictionaryEvictionMode, IEqualityComparer(TKey))" Url="html/e54c7d33-509b-f291-258d-213f92a9de7e.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Id="a25f1dd7-5fbd-4980-ae49-aca9a638c87e" Title="RecentDictionary(TKey, TValue) Properties" Url="html/26a8e586-b106-6710-2af0-89f6c2608435.htm">
+        <HelpTOCNode Title="Count Property " Url="html/5c378cc2-db77-ffe0-03c4-fed0e9faf480.htm" />
+        <HelpTOCNode Title="Item Property " Url="html/38b0600b-91ff-f892-5a43-4cabd9f0c3bb.htm" />
+        <HelpTOCNode Title="Keys Property " Url="html/627af68f-ad9f-dac8-6be9-476140bf5ea2.htm" />
+        <HelpTOCNode Title="LeastRecent Property " Url="html/c406acff-ea25-0432-b31b-d48fbce8c63c.htm" />
+        <HelpTOCNode Title="MostRecent Property " Url="html/a50bbc82-726c-3d98-66ef-17eee2396f83.htm" />
+        <HelpTOCNode Title="Values Property " Url="html/619493d7-433e-f391-8006-b01f618fd1ab.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Id="3ebdc059-5805-40af-b990-f39ae70a8d59" Title="RecentDictionary(TKey, TValue) Methods" Url="html/e28bdfbb-7049-50db-558d-93742f662181.htm">
+        <HelpTOCNode Title="Add Method " Url="html/c1e4e4e1-9a4e-c4cd-70ef-9240d4d9e4c4.htm" />
+        <HelpTOCNode Title="Clear Method " Url="html/9f1321ef-4cf8-4f07-9b64-b7abaf71e395.htm" />
+        <HelpTOCNode Title="ContainsKey Method " Url="html/e7934ac7-8b1a-2062-70ac-b231e23fdc5b.htm" />
+        <HelpTOCNode Title="ContainsValue Method " Url="html/ad2dd6ce-491a-7415-9ead-eccce2f9faa0.htm" />
+        <HelpTOCNode Title="GetEnumerator Method " Url="html/1dda25c1-1359-3b34-2725-c37b4cea29b7.htm" />
+        <HelpTOCNode Title="Remove Method " Url="html/a9d354f4-41e5-fa0c-02ce-e20df67245e6.htm" />
+        <HelpTOCNode Title="RemoveAndGetLeastRecent Method " Url="html/4ac2f8ac-dd38-6a64-e842-5dc5901f964c.htm" />
+        <HelpTOCNode Title="RemoveAndGetMostRecent Method " Url="html/f9bebff2-b95c-d9a6-733a-dadb48dc407e.htm" />
+        <HelpTOCNode Title="RemoveLeastRecent Method " Url="html/83f35b6d-7ef9-6ed1-5568-340217888243.htm" />
+        <HelpTOCNode Title="RemoveMostRecent Method " Url="html/b1e483d7-3134-31df-e1da-46b2ba472f43.htm" />
+        <HelpTOCNode Title="SetAndMaintainCount Method " Url="html/de3c7444-a9dd-d3c3-8094-89377645eb79.htm" />
+        <HelpTOCNode Title="Trim Method " Url="html/7ac24d14-844e-a27b-8685-5228a5cd1e8a.htm" />
+        <HelpTOCNode Title="TryGetValue Method " Url="html/f7bc05ef-dc32-b29b-6ff1-7a72fba4f1c7.htm" />
+      </HelpTOCNode>
+    </HelpTOCNode>
+    <HelpTOCNode Id="07dddd39-1727-468f-8735-56cb96ab262d" Title="RecentDictionary(TKey, TValue).KeyCollection Class" Url="html/76e4636b-c260-bb19-79c5-1f7d438d9b00.htm">
+      <HelpTOCNode Id="7e7a692b-e5ee-4943-9628-e0befd21bd71" Title="KeyCollection Properties" Url="html/3346401b-4c90-2d9d-f953-4c6f06498880.htm">
+        <HelpTOCNode Title="Count Property " Url="html/6bee4328-b5db-03cb-2bcc-affa160540a2.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Id="6e482989-42e0-493d-8e94-0b93c4521c7e" Title="KeyCollection Methods" Url="html/e8d25f24-9686-4462-f505-0c01d3f898e5.htm">
+        <HelpTOCNode Title="CopyTo Method " Url="html/4a069e45-d24f-ee97-4966-4f9edccc1bc4.htm" />
+        <HelpTOCNode Title="GetEnumerator Method " Url="html/44ecafde-d0e9-6fb8-259f-70eaa4f3373f.htm" />
+      </HelpTOCNode>
+    </HelpTOCNode>
+    <HelpTOCNode Id="e052dbe5-e9c5-4978-a470-9ef92385b4f1" Title="RecentDictionary(TKey, TValue).ValueCollection Class" Url="html/203f07f8-ab1b-266f-d001-3da15c29ee22.htm">
+      <HelpTOCNode Id="00d64831-913f-4c45-ac0c-23790dde3ecf" Title="ValueCollection Properties" Url="html/de87567b-ea92-5f8b-0671-55ca075f6d30.htm">
+        <HelpTOCNode Title="Count Property " Url="html/592783fa-7055-bb56-ed9c-2f97652e432a.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Id="9c800dfc-5770-4963-9b33-51da0fbee03a" Title="ValueCollection Methods" Url="html/552f2609-2ca7-8817-8c80-662eee423633.htm">
+        <HelpTOCNode Title="GetEnumerator Method " Url="html/aa548f5c-66d9-9d76-9fe0-31f230738e79.htm" />
+      </HelpTOCNode>
+    </HelpTOCNode>
+    <HelpTOCNode Title="RecentDictionaryEvictionMode Enumeration" Url="html/59687ace-abdf-9198-2bad-f14b1be8758d.htm" />
+    <HelpTOCNode Id="fb649c73-adcf-4f1d-a8b1-284512b25503" Title="RouletteDictionary(TKey, TValue) Class" Url="html/835bf4de-10d5-9283-e0d4-95918772829c.htm">
+      <HelpTOCNode Id="dd86e07e-6bc1-4681-a003-a8d9d962567a" Title="RouletteDictionary(TKey, TValue) Constructor " Url="html/96285dd8-c3f3-1a25-b2fe-50e376cc7f8f.htm">
+        <HelpTOCNode Title="RouletteDictionary(TKey, TValue) Constructor " Url="html/59a70763-52c9-53e2-27d0-5cabc2089849.htm" />
+        <HelpTOCNode Title="RouletteDictionary(TKey, TValue) Constructor (IEqualityComparer(TKey))" Url="html/a1c5149f-345f-0748-c376-210b4cca4a3f.htm" />
+        <HelpTOCNode Title="RouletteDictionary(TKey, TValue) Constructor (Int32)" Url="html/b9c80d57-7675-7421-2c4b-5461ed96432f.htm" />
+        <HelpTOCNode Title="RouletteDictionary(TKey, TValue) Constructor (Int32, IEqualityComparer(TKey))" Url="html/ac0e40eb-e855-c01b-bc93-b0d415ed27b8.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Id="12188946-9e7e-48a6-b5d6-951f7d6daeae" Title="RouletteDictionary(TKey, TValue) Properties" Url="html/c654ddcc-dfd9-7bba-30b0-a3d98a1625bb.htm">
+        <HelpTOCNode Title="Count Property " Url="html/a6c5fe94-edd1-be68-182d-0ceff54c6ea6.htm" />
+        <HelpTOCNode Title="Item Property " Url="html/b90892e9-65cc-6dcb-d80d-0f54da97fb91.htm" />
+        <HelpTOCNode Title="Keys Property " Url="html/5694bf76-f81d-c430-2c2f-c5535bb09832.htm" />
+        <HelpTOCNode Title="Values Property " Url="html/da8632b7-594b-341f-d15b-f80288b44863.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Id="2a2104ef-a1b3-45f2-9117-f5d66c429303" Title="RouletteDictionary(TKey, TValue) Methods" Url="html/6def7909-0045-1078-c33b-a2a3faa9f54e.htm">
+        <HelpTOCNode Title="Add Method " Url="html/96523260-6416-6d4f-dd91-b56d426343a1.htm" />
+        <HelpTOCNode Title="Clear Method " Url="html/f5f89f71-6231-ca36-8c48-152d273e0cd6.htm" />
+        <HelpTOCNode Title="ContainsKey Method " Url="html/6c694d06-7989-8d6d-74b4-5b70e20cb4ce.htm" />
+        <HelpTOCNode Title="ContainsValue Method " Url="html/646d02ef-9e33-802e-a55c-2f24a02748de.htm" />
+        <HelpTOCNode Title="GetEnumerator Method " Url="html/05c1f82b-ae60-4ad0-b252-ccfa632a0d96.htm" />
+        <HelpTOCNode Id="5f19740f-3489-448b-bb24-443eb8f7c9d1" Title="GetRandomKey Method " Url="html/1d005f0a-d838-6941-d1b5-a4186f3ff95b.htm">
+          <HelpTOCNode Title="GetRandomKey Method " Url="html/1efb8d88-be8d-e78c-65c7-ff718936a55d.htm" />
+          <HelpTOCNode Title="GetRandomKey Method (Func(TValue, Boolean))" Url="html/c55287d1-a480-4b51-2024-2f2e54552ffc.htm" />
+        </HelpTOCNode>
+        <HelpTOCNode Id="cc61ac47-2d85-492d-b1bd-cc76368e871e" Title="GetRandomKeyAndValue Method " Url="html/ab8b9020-caf0-38b4-2d3c-0544e1abb5dd.htm">
+          <HelpTOCNode Title="GetRandomKeyAndValue Method " Url="html/d44dd4aa-3bcc-64c9-a250-888fb5b735c0.htm" />
+          <HelpTOCNode Title="GetRandomKeyAndValue Method (Func(TValue, Boolean))" Url="html/36000001-5c73-719e-71db-68508e2d9eff.htm" />
+        </HelpTOCNode>
+        <HelpTOCNode Id="f0dafbc3-d3de-4534-b653-70603c34cf1d" Title="GetRandomValue Method " Url="html/a9564f14-a708-8d8e-3a67-80cc9a436eb2.htm">
+          <HelpTOCNode Title="GetRandomValue Method " Url="html/ff95c39c-6e09-2807-55f3-48f6a871c382.htm" />
+          <HelpTOCNode Title="GetRandomValue Method (Func(TValue, Boolean))" Url="html/721c6196-c95e-8a48-99f1-7e6421ccad5f.htm" />
+        </HelpTOCNode>
+        <HelpTOCNode Title="Remove Method " Url="html/3e963a92-551e-3511-71a0-c65e21b4f8e2.htm" />
+        <HelpTOCNode Id="79eeb5f1-3b2c-4aee-8ca9-85ed79943c3f" Title="RemoveRandom Method " Url="html/1295e3ca-2c2b-a232-17c5-6726f05dc8f2.htm">
+          <HelpTOCNode Title="RemoveRandom Method " Url="html/382e677d-64ae-c812-487b-b5cf3de33da2.htm" />
+          <HelpTOCNode Title="RemoveRandom Method (Func(TValue, Boolean))" Url="html/fbee1eab-8769-4f8f-d285-4e16bfc4ce0f.htm" />
+        </HelpTOCNode>
+        <HelpTOCNode Id="b5c8a0c2-2ee1-432a-9b72-128445c7ae52" Title="RemoveRandomAndGet Method " Url="html/4ca123e5-f5d8-98cd-3923-e3b2e7a9c889.htm">
+          <HelpTOCNode Title="RemoveRandomAndGet Method " Url="html/909da49d-9208-aae1-d82d-13b6ea6111d0.htm" />
+          <HelpTOCNode Title="RemoveRandomAndGet Method (Func(TValue, Boolean))" Url="html/2ca49b1c-be78-b037-e32c-fd008fea6ea5.htm" />
+        </HelpTOCNode>
+        <HelpTOCNode Title="SetAndMaintainCount Method " Url="html/cf4033cb-6b75-4c7c-c197-c29f6a53f958.htm" />
+        <HelpTOCNode Title="Trim Method " Url="html/42006424-bc7d-ab16-8587-86d95933d89d.htm" />
+        <HelpTOCNode Title="TryGetValue Method " Url="html/470c7d51-2de4-5e7b-4b6d-241037ecd102.htm" />
+      </HelpTOCNode>
+    </HelpTOCNode>
+    <HelpTOCNode Id="a57d45a0-ebf4-4172-88e3-213b070c89f5" Title="RouletteDictionary(TKey, TValue).KeyCollection Class" Url="html/89944766-4950-d7b2-a605-72904a554e73.htm">
+      <HelpTOCNode Id="bbbdf173-213f-491a-b764-701df0d8734a" Title="KeyCollection Properties" Url="html/73e4a602-b23a-db12-5087-41fe418ac691.htm">
+        <HelpTOCNode Title="Count Property " Url="html/89ac22f4-300d-9a35-b080-fb5fa86fc983.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Id="3e17d383-9507-4133-9191-d0c27a2e58f1" Title="KeyCollection Methods" Url="html/e4bd9cfc-1e84-2636-6ba4-9d88a45ab02b.htm">
+        <HelpTOCNode Title="CopyTo Method " Url="html/99ab61a3-9b8e-9558-3bb3-9eb82914aeab.htm" />
+        <HelpTOCNode Title="GetEnumerator Method " Url="html/c2962831-b4ba-6875-ccf4-36a86e799f7a.htm" />
+      </HelpTOCNode>
+    </HelpTOCNode>
+    <HelpTOCNode Id="d65aad8c-612a-4a42-b4dc-d20d3271cf11" Title="RouletteDictionary(TKey, TValue).ValueCollection Class" Url="html/a82661ca-89d9-d75a-7702-ec3652e14138.htm">
+      <HelpTOCNode Id="60835419-e937-436f-bac4-6750f1d9554b" Title="ValueCollection Properties" Url="html/85ed6895-570b-a119-aab3-7fce9dbd0f3f.htm">
+        <HelpTOCNode Title="Count Property " Url="html/c78551e0-a07a-2e07-ba8d-1481563ae8a5.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Id="5ac1c1bc-a779-47e0-bb76-468437a63504" Title="ValueCollection Methods" Url="html/034c2c0a-c315-0d6a-d8c5-8c9e24ef44a3.htm">
+        <HelpTOCNode Title="GetEnumerator Method " Url="html/f9ddff89-4221-a4d6-c5d7-773e9c75f9a0.htm" />
+      </HelpTOCNode>
+    </HelpTOCNode>
+  </HelpTOCNode>
+</HelpTOC>
