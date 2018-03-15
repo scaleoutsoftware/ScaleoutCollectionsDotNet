@@ -4,7 +4,7 @@ Useful building blocks for in-process caches.
 
 Nuget: `Install-Package Scaleout.Collections -Pre`
 
-Documentation: https://scaleoutsoftware.github.io/ScaleoutCollectionsDotNet/
+API Documentation: https://scaleoutsoftware.github.io/ScaleoutCollectionsDotNet/
 
 ## Overview
 
@@ -30,9 +30,9 @@ random entry.
 
 ## Motivation
 
-These collections simplfiy the the creation of in memory caches that
+These collections simplfiy the creation of in-memory caches that
 require an eviction policy, often with better performance and lower
-memory usage.
+memory usage than traditional approaches.
 
 ### RecentDictionary 
 
@@ -46,16 +46,17 @@ data structures. Memory savings will vary depending on key size.
 
 ### RouletteDictionary
 
-Random eviction using an standard .NET Dictionary is not possible
+Random eviction using a standard .NET Dictionary is not possible
 without maintaining a separate collection of
 keys. The
-[RouletteDictionary](https://scaleoutsoftware.github.io/ScaleoutCollectionsDotNet/html/835bf4de-10d5-9283-e0d4-95918772829c.htm) addresses
-this by making it straightforward to retrieve or remove random
+[RouletteDictionary](https://scaleoutsoftware.github.io/ScaleoutCollectionsDotNet/html/835bf4de-10d5-9283-e0d4-95918772829c.htm)
+addresses this by making it straightforward to retrieve or remove random
 elements.
 
 ### Example
 
-The following sample illustrates how an LRU cache could be created using the RecentDictionary class.
+The following sample illustrates how an LRU cache could be created
+using the RecentDictionary class.
 
 ```csharp
 using Scaleout.Collections;
