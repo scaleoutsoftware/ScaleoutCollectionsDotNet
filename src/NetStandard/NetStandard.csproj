@@ -16,4 +16,6 @@
     <DocumentationFile>bin\Release\netstandard2.0\Scaleout.Collections.xml</DocumentationFile>
   </PropertyGroup>
 
+  <Import Project="..\Scaleout.Collections\Scaleout.Collections.projitems" Label="Shared" />
+
 </Project>
