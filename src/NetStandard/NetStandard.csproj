@@ -10,6 +10,7 @@
     <Description>A set of collections provided by ScaleOut Software</Description>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Scaleout.Collections.snk</AssemblyOriginatorKeyFile>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
