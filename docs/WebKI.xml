@@ -44,10 +44,10 @@
     <HelpKINode Title="RouletteDictionary(TKey, TValue).Item Property " Url="html/b90892e9-65cc-6dcb-d80d-0f54da97fb91.htm" />
   </HelpKINode>
   <HelpKINode Title="KeyCollection class">
-    <HelpKINode Title="methods" Url="html/e8d25f24-9686-4462-f505-0c01d3f898e5.htm" />
     <HelpKINode Title="methods" Url="html/e4bd9cfc-1e84-2636-6ba4-9d88a45ab02b.htm" />
-    <HelpKINode Title="properties" Url="html/73e4a602-b23a-db12-5087-41fe418ac691.htm" />
+    <HelpKINode Title="methods" Url="html/e8d25f24-9686-4462-f505-0c01d3f898e5.htm" />
     <HelpKINode Title="properties" Url="html/3346401b-4c90-2d9d-f953-4c6f06498880.htm" />
+    <HelpKINode Title="properties" Url="html/73e4a602-b23a-db12-5087-41fe418ac691.htm" />
   </HelpKINode>
   <HelpKINode Title="Keys property">
     <HelpKINode Title="RecentDictionary(TKey, TValue).Keys Property " Url="html/627af68f-ad9f-dac8-6be9-476140bf5ea2.htm" />
@@ -253,8 +253,8 @@
     <HelpKINode Title="RouletteDictionary(TKey, TValue).TryGetValue Method " Url="html/470c7d51-2de4-5e7b-4b6d-241037ecd102.htm" />
   </HelpKINode>
   <HelpKINode Title="ValueCollection class">
-    <HelpKINode Title="methods" Url="html/552f2609-2ca7-8817-8c80-662eee423633.htm" />
     <HelpKINode Title="methods" Url="html/034c2c0a-c315-0d6a-d8c5-8c9e24ef44a3.htm" />
+    <HelpKINode Title="methods" Url="html/552f2609-2ca7-8817-8c80-662eee423633.htm" />
     <HelpKINode Title="properties" Url="html/85ed6895-570b-a119-aab3-7fce9dbd0f3f.htm" />
     <HelpKINode Title="properties" Url="html/de87567b-ea92-5f8b-0671-55ca075f6d30.htm" />
   </HelpKINode>
