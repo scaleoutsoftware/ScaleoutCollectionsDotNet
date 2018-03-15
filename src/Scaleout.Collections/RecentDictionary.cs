@@ -52,7 +52,14 @@ namespace Scaleout.Collections
     /// dictionary and removes either the least-recently-used or most-recently-used item
     /// if the operation results in an add to prevent unbounded growth.
     /// </para>
+    /// <note type="warning">
+    /// Unlike a standard .NET dictionary, this collection does not tolerate multiple
+    /// concurrent readers. Retrieving a value from this collection changes the entry's position
+    /// in the internal LRU list and there modifies the dictionary's state. Be sure to 
+    /// use a lock in multithreaded scenarios.
+    /// </note>
     /// </remarks>
+    /// <threadsafety static="true" instance="false"/>
     [DebuggerDisplay("Count = {Count}")]
     public sealed class RecentDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {

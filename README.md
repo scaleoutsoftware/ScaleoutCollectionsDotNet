@@ -53,6 +53,75 @@ keys. The
 this by making it straightforward to retrieve or remove random
 elements.
 
+### Example
+
+The following sample illustrates how an LRU cache could be created using the RecentDictionary class.
+
+```csharp
+using Scaleout.Collections;
+
+// A basic LRU cache
+class MyLruCache<TKey, TValue>
+{
+    public int MaxSize { get; }
+    private RecentDictionary<TKey, TValue> _entries;
+    private object _guard = new object();
+
+    public MyLruCache(int maxSize)
+    {
+        MaxSize = maxSize;
+        _entries = new RecentDictionary<TKey, TValue>(capacity: maxSize,
+                                                      evictionMode: RecentDictionaryEvictionMode.LRU,
+                                                      comparer: null);
+    }
+
+    // Gets an item from the cache.
+    public TValue Get(TKey key)
+    {
+        lock (_guard)
+        {
+            // TryGetValue() makes the entry the most-recently accessed:
+            bool found = _entries.TryGetValue(key, out TValue entry);
+            if (found)
+                return entry;
+            else
+                return default;
+        }
+    }
+
+    // Adds/updates an item in the cache.
+    public void Set(TKey key, TValue value)
+    {
+        lock (_guard)
+        {
+            if (_entries.Count == MaxSize)
+            {
+                // We're at our cache's capacity. SetAndMaintainCount will
+                // cause the least recently used item to be evicted if a new
+                // entry needs to be added.
+                _entries.SetAndMaintainCount(key, value);
+            }
+            else
+            {
+                // Not at a max capacity yet.
+                // The ordinary setter does not perform eviction.
+                _entries[key] = value;
+            }
+        }
+    }
+
+    // Removes an item from the cache.
+    public void Remove(TKey key)
+    {
+        lock (_guard)
+        {
+            _entries.Remove(key);
+        }
+    }
+
+}
+```
+
 ## License
 
 Apache 2

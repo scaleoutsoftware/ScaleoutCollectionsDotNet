@@ -37,10 +37,12 @@ namespace Scaleout.Collections
     /// the primary method for this use case. It allows entries to be added/updated in the 
     /// dictionary and removes a random item if the operation results in an add to prevent
     /// unbounded growth.
-    /// </para><para>
+    /// </para>
+    /// <para>
     /// The collection also offers methods for retrieval and removal of random items.
     /// </para>
     /// </remarks>
+    /// <threadsafety static="true" instance="false"/>
     [DebuggerDisplay("Count = {Count}")]
     public sealed class RouletteDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
