@@ -3,7 +3,7 @@
   <metadata>
     <id>Scaleout.Collections</id>
     <version>1.0.2-beta</version>
-    <releaseNotes>Revised initial beta release--fixed build of .NET Standard 2.0 assembly.</releaseNotes>
+    <releaseNotes>Revised beta release--RouletteDictionary bugfix.</releaseNotes>
     <title>ScaleOut Software Collections for .NET</title>
     <authors>scaleoutsoftware</authors>
     <owners>scaleoutsoftware</owners>
