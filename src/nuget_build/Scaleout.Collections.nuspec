@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>Scaleout.Collections</id>
-    <version>1.0.1-beta</version>
+    <version>1.0.2-beta</version>
     <releaseNotes>Revised initial beta release--fixed build of .NET Standard 2.0 assembly.</releaseNotes>
     <title>ScaleOut Software Collections for .NET</title>
     <authors>scaleoutsoftware</authors>
