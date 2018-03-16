@@ -126,6 +126,18 @@ namespace UnitTests
         }
 
         [Fact]
+        public void GetRandomUnsatisfied()
+        {
+            var rd = new RouletteDictionary<string, int>(1000, StringComparer.Ordinal);
+
+            rd["foo"] = 42;
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                rd.GetRandomValue(v => v == 24);
+            });
+        }
+
+        [Fact]
         public void SetAndMaintainCount()
         {
             var rd = new RouletteDictionary<string, int>(1000, StringComparer.Ordinal);

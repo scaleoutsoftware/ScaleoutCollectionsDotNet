@@ -755,6 +755,7 @@ namespace Scaleout.Collections
                     {
                         return bucketIndex;
                     }
+                    checkedObjCount++;
                     node = node.Next;
                 }
 
