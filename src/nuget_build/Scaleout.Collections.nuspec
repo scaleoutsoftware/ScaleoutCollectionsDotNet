@@ -2,8 +2,8 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>Scaleout.Collections</id>
-    <version>1.0.2-beta</version>
-    <releaseNotes>Revised beta release--RouletteDictionary bugfix.</releaseNotes>
+    <version>1.0.3</version>
+    <releaseNotes>Initial release.</releaseNotes>
     <title>ScaleOut Software Collections for .NET</title>
     <authors>scaleoutsoftware</authors>
     <owners>scaleoutsoftware</owners>
@@ -11,7 +11,7 @@
     <projectUrl>https://github.com/scaleoutsoftware/ScaleoutCollectionsDotNet</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A library of .NET dictionaries that are useful building blocks for in-memory caches with various eviction strategies (LRU and Random, primarily).</description>
-    <copyright>Copyright (C), 2018 by ScaleOut Software, Inc.</copyright>
+    <copyright>Copyright (C), 2019 by ScaleOut Software, Inc.</copyright>
     <tags>LRU Random eviction cache ordered dictionary</tags>
   </metadata>
   <files>

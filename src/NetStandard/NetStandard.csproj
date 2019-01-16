@@ -5,12 +5,12 @@
     <AssemblyName>Scaleout.Collections</AssemblyName>
     <RootNamespace>Scaleout.Collections</RootNamespace>
     <Authors>scaleoutsoftware</Authors>
-    <Copyright>Copyright © 2018 by ScaleOut Software, Inc.</Copyright>
+    <Copyright>Copyright © 2019 by ScaleOut Software, Inc.</Copyright>
     <Company>ScaleOut Software, Inc.</Company>
     <Description>A set of collections provided by ScaleOut Software</Description>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Scaleout.Collections.snk</AssemblyOriginatorKeyFile>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

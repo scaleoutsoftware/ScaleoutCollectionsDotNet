@@ -47,7 +47,7 @@
     <Preliminary>False</Preliminary>
     <NamingMethod>Guid</NamingMethod>
     <HelpTitle>ScaleOut Software Collections for .NET</HelpTitle>
-    <CopyrightText>Copyright %28C%29, 2018 by ScaleOut Software, Inc.</CopyrightText>
+    <CopyrightText>Copyright %28C%29, 2019 by ScaleOut Software, Inc.</CopyrightText>
     <ContentPlacement>AboveNamespaces</ContentPlacement>
     <WarnOnMissingSourceContext>False</WarnOnMissingSourceContext>
     <NamespaceSummaries>

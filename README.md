@@ -2,7 +2,7 @@
 
 Useful building blocks for in-process caches.
 
-Nuget: `Install-Package Scaleout.Collections -Pre`
+Nuget: `Install-Package Scaleout.Collections`
 
 API Documentation: https://scaleoutsoftware.github.io/ScaleoutCollectionsDotNet/
 
