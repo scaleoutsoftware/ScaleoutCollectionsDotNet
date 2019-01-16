@@ -253,7 +253,6 @@ namespace UnitTests
             for (int i = 0; i < 100; i++)
                 rd.Add(i, i);
 
-            // remove the last item to exercise tombstones.
             rd.Remove(99);
 
             bool[] returnedKeys = new bool[99];
@@ -276,7 +275,6 @@ namespace UnitTests
             for (int i = 0; i < 100; i++)
                 rd.Add(i, i);
 
-            // remove the last item to exercise tombstones.
             rd.Remove(99);
 
             bool[] returnedVals = new bool[99];
@@ -299,7 +297,6 @@ namespace UnitTests
             for (int i = 0; i < 100; i++)
                 rd.Add(i.ToString(), i);
 
-            // remove something to exercise tombstones.
             rd.Remove("42");
 
             Assert.True(rd.ContainsValue(66));

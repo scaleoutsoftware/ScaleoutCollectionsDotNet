@@ -56,7 +56,7 @@ namespace Scaleout.Collections
         private int _count = 0;
         private int _bucketMask; // applied to hashes to select buckets (faster than modulo, but requires a good hash function).
 
-        IEqualityComparer<TKey> _comparer;
+        readonly IEqualityComparer<TKey> _comparer;
 
         // Cached references to collections returned by Keys and Values properties.
         private KeyCollection _keys = null;
@@ -71,14 +71,14 @@ namespace Scaleout.Collections
         int _freeCount;
 
         // RNG for random accesses. 
-        private Random _rand = new Random();
+        private readonly Random _rand = new Random();
 
         // Spin lock for protecting _rand above --
         // people are accustomed to doing unsynchronized 
         // reads from dictionaries. But System.Random is stateful
         // and does terrible things if accessed concurrently (quietly starts
         // returning nothing but zeros, which is not very random).
-        private SpinLock _randGuard = new SpinLock(enableThreadOwnerTracking: false);
+        private readonly SpinLock _randGuard = new SpinLock(enableThreadOwnerTracking: false);
 
         // Node containing an item in the collection.
         private class Node
@@ -283,8 +283,6 @@ namespace Scaleout.Collections
                 node.Next = newNode;
 
             _count++;
-            return;
-
         } // end Set()
 
 
@@ -353,6 +351,7 @@ namespace Scaleout.Collections
         /// <summary>
         /// Rounds up to the next power of 2.
         /// </summary>
+        /// <param name="n">Minimum allowed value for the next power of 2.</param>
         private static int NextPowerOfTwo(int n)
         {
             // from https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2 (public domain)
@@ -381,7 +380,7 @@ namespace Scaleout.Collections
 
             for (int i = 0; i < _buckets.Length; i++)
             {
-                Node node = _buckets[i];
+                Node node;
                 
                 while (true)
                 {
@@ -589,9 +588,7 @@ namespace Scaleout.Collections
         /// <returns>An enumerator to iterate through the dictionary's key/value pairs.</returns>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            if (_count == 0)
-                yield break;
-            else
+            if (_count > 0)
             {
                 for (int i = 0; i < _buckets.Length; i++)
                 {
@@ -949,9 +946,9 @@ namespace Scaleout.Collections
         /// <summary>
         /// Represents the collection of keys in a <see cref="RouletteDictionary{TKey, TValue}"/>.
         /// </summary>
-        public sealed class KeyCollection : ICollection<TKey>, IEnumerable<TKey>, IReadOnlyCollection<TKey>
+        public sealed class KeyCollection : ICollection<TKey>, IReadOnlyCollection<TKey>
         {
-            private RouletteDictionary<TKey, TValue> _dict;
+            private readonly RouletteDictionary<TKey, TValue> _dict;
 
             internal KeyCollection(RouletteDictionary<TKey, TValue> dictionary)
             {
@@ -1014,9 +1011,7 @@ namespace Scaleout.Collections
             /// <returns>An enumerator that can be used to iterate through the collection.</returns>
             public IEnumerator<TKey> GetEnumerator()
             {
-                if (_dict._count == 0)
-                    yield break;
-                else
+                if (_dict._count > 0)
                 {
                     var buckets = _dict._buckets;
                     for (int i = 0; i < buckets.Length; i++)
@@ -1047,9 +1042,9 @@ namespace Scaleout.Collections
         /// <summary>
         /// Represents the collection of values in a <see cref="RouletteDictionary{TKey, TValue}"/>.
         /// </summary>
-        public sealed class ValueCollection : ICollection<TValue>, IEnumerable<TValue>, IReadOnlyCollection<TValue>
+        public sealed class ValueCollection : ICollection<TValue>, IReadOnlyCollection<TValue>
         {
-            private RouletteDictionary<TKey, TValue> _dict;
+            private readonly RouletteDictionary<TKey, TValue> _dict;
 
             internal ValueCollection(RouletteDictionary<TKey, TValue> dictionary)
             {
@@ -1107,9 +1102,7 @@ namespace Scaleout.Collections
             /// <returns>An enumerator that can be used to iterate through the collection.</returns>
             public IEnumerator<TValue> GetEnumerator()
             {
-                if (_dict._count == 0)
-                    yield break;
-                else
+                if (_dict._count > 0)
                 {
                     var buckets = _dict._buckets;
                     for (int i = 0; i < buckets.Length; i++)

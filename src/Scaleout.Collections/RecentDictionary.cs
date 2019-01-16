@@ -67,18 +67,18 @@ namespace Scaleout.Collections
         // that maintains the order in which element are accessed.
         //  - Collision resolution: chaining.
         //  - Bucket count: always a power of two.
-        //  - Possible TODO: The SetAndMaintainCount() signature is identical to
+        //  - Possible improvement: The SetAndMaintainCount() signature is identical to
         //     RouletteDictionary... consider a common "EvictionDictionary"
         //     abstract base class.
 
         Node[] _buckets;
         Node _lruHead;
         Node _lruTail;
-        RecentDictionaryEvictionMode _evictMode = RecentDictionaryEvictionMode.LRU;
+        readonly RecentDictionaryEvictionMode _evictMode = RecentDictionaryEvictionMode.LRU;
         private int _count = 0;
         private int _bucketMask; // applied to hashes to select buckets (faster than modulo, but requires a good hash function).
 
-        IEqualityComparer<TKey> _comparer;
+        readonly IEqualityComparer<TKey> _comparer;
 
         // Cached references to collections returned by Keys and Values properties.
         private KeyCollection _keys = null;
@@ -424,8 +424,6 @@ namespace Scaleout.Collections
                 node.Next = newNode;
 
             _count++;
-            return;
-
         } // end Set()
 
 
@@ -502,6 +500,7 @@ namespace Scaleout.Collections
         /// <summary>
         /// Rounds up to the next power of 2.
         /// </summary>
+        /// <param name="n">Minimum allowed value for the next power of 2.</param>
         private static int NextPowerOfTwo(int n)
         {
             // see https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
@@ -530,7 +529,7 @@ namespace Scaleout.Collections
 
             for (int i = 0; i < _buckets.Length; i++)
             {
-                Node node = _buckets[i];
+                Node node;
 
                 while (true)
                 {
@@ -732,9 +731,7 @@ namespace Scaleout.Collections
         /// <returns>An enumerator to iterate through the dictionary's key/value pairs.</returns>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            if (_count == 0)
-                yield break;
-            else
+            if (_count > 0)
             {
                 var node = _lruHead;
                 while (node != null)
@@ -954,9 +951,9 @@ namespace Scaleout.Collections
         /// <summary>
         /// Represents the collection of keys in a <see cref="RecentDictionary{TKey, TValue}"/>.
         /// </summary>
-        public sealed class KeyCollection : ICollection<TKey>, IEnumerable<TKey>, IReadOnlyCollection<TKey>
+        public sealed class KeyCollection : ICollection<TKey>, IReadOnlyCollection<TKey>
         {
-            private RecentDictionary<TKey, TValue> _dict;
+            private readonly RecentDictionary<TKey, TValue> _dict;
 
             internal KeyCollection(RecentDictionary<TKey, TValue> dictionary)
             {
@@ -1015,9 +1012,7 @@ namespace Scaleout.Collections
             /// <returns>An enumerator that can be used to iterate through the collection.</returns>
             public IEnumerator<TKey> GetEnumerator()
             {
-                if (_dict._count == 0)
-                    yield break;
-                else
+                if (_dict._count > 0)
                 {
                     var node = _dict._lruHead;
                     while (node != null)
@@ -1044,9 +1039,9 @@ namespace Scaleout.Collections
         /// <summary>
         /// Represents the collection of values in a <see cref="RecentDictionary{TKey, TValue}"/>.
         /// </summary>
-        public sealed class ValueCollection : ICollection<TValue>, IEnumerable<TValue>, IReadOnlyCollection<TValue>
+        public sealed class ValueCollection : ICollection<TValue>, IReadOnlyCollection<TValue>
         {
-            private RecentDictionary<TKey, TValue> _dict;
+            private readonly RecentDictionary<TKey, TValue> _dict;
 
             internal ValueCollection(RecentDictionary<TKey, TValue> dictionary)
             {
@@ -1100,9 +1095,7 @@ namespace Scaleout.Collections
             /// <returns>An enumerator that can be used to iterate through the collection.</returns>
             public IEnumerator<TValue> GetEnumerator()
             {
-                if (_dict._count == 0)
-                    yield break;
-                else
+                if (_dict._count > 0)
                 {
                     var node = _dict._lruHead;
                     while (node != null)
