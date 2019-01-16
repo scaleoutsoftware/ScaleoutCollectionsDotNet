@@ -7,7 +7,7 @@
     <title>ScaleOut Software Collections for .NET</title>
     <authors>scaleoutsoftware</authors>
     <owners>scaleoutsoftware</owners>
-    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+	<license type="expression">Apache-2.0</license>
     <projectUrl>https://github.com/scaleoutsoftware/ScaleoutCollectionsDotNet</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A library of .NET dictionaries that are useful building blocks for in-memory caches with various eviction strategies (LRU and Random, primarily).</description>
