@@ -61,6 +61,21 @@ namespace UnitTests
         }
 
         [Fact]
+        public void SetAndMaintainCountKnownBucketCollision()
+        {
+            var ld = new RecentDictionary<int, int>(RecentDictionaryEvictionMode.LRU);
+
+            for (int i = 0; i < 3; i++)
+                ld[i] = i;
+
+            ld.SetAndMaintainCount(8, 42);
+            Assert.Equal(3, ld.Count);
+            Assert.True(ld.ContainsKey(1));
+            Assert.True(ld.ContainsKey(2));
+            Assert.True(ld.ContainsKey(8));
+        }
+
+        [Fact]
         public void EnumerateMruToLru()
         {
             var ld = new RecentDictionary<string, int>(1000, StringComparer.Ordinal);

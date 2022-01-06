@@ -303,6 +303,7 @@ namespace Scaleout.Collections
                 _lruHead.LruPrevious = node;
                 node.LruNext = _lruHead;
                 _lruHead = node;
+                _lruHead.LruPrevious = null;
             }
         }
 
@@ -402,8 +403,19 @@ namespace Scaleout.Collections
                     }
                 }
                 RemoveNode(nodeToRemove, nodeToRemove.HashCode & _bucketMask);
-            }
 
+                // Reacquire the end of the new node's bucket, since there's a small
+                // chance the bucket's chain was changed by the RemoveNode call above (specifically,
+                // we'd be in trouble if `nodeToRemove` just happens to be `node`).
+                node = _buckets[bucketIndex];
+                if (node != null)
+                {
+                    while (node.Next != null)
+                    {
+                        node = node.Next;
+                    }
+                }
+            }
 
             // Add a new node.
             var newNode = AcquireNewNode(hashcode, prev: node, next: null, lruPrev: null, lruNext: _lruHead, key: key, val: value);
@@ -534,7 +546,7 @@ namespace Scaleout.Collections
                 while (true)
                 {
                     if (_buckets[i] == null)
-                        break;
+                        break; // empty bucket.
                     else
                         node = _buckets[i];
 

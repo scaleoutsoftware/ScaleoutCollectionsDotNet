@@ -365,5 +365,24 @@ namespace UnitTests
             }
         }
 
+        [Fact]
+        public void RemoveLeastRecent()
+        {
+            var ld = new RecentDictionary<string, int>();
+            for (int i = 0; i < 3; i++)
+                ld[i.ToString()] = i;
+
+            Assert.Equal(0, ld.LeastRecent.Value);
+
+            ld.Remove("0");
+            Assert.Equal(1, ld.LeastRecent.Value);
+        }
+
+        [Fact]
+        public void RemoveMostRecent()
+        {
+
+        }
+
     }
 }
