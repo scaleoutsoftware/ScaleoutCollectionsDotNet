@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31911.196
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Scaleout.Collections", "Scaleout.Collections\Scaleout.Collections.shproj", "{B5CE2162-E039-4068-853C-E690F740DEF5}"
 EndProject
@@ -16,6 +16,7 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Scaleout.Collections\Scaleout.Collections.projitems*{4e560f0f-0531-4687-abb6-2b4ce7fd5a03}*SharedItemsImports = 4
+		Scaleout.Collections\Scaleout.Collections.projitems*{8faa6395-8a7f-40df-953f-6e9ee4b71677}*SharedItemsImports = 5
 		Scaleout.Collections\Scaleout.Collections.projitems*{b5ce2162-e039-4068-853c-e690f740def5}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
