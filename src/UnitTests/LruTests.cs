@@ -67,9 +67,22 @@ namespace UnitTests
         public void OneItemBigCapacity()
         {
             var ld = new RecentDictionary<string, string>(100_000);
+            Assert.True(ld.Capacity > 100_000);
+
             ld["hello"] = "world";
             Assert.Equal("world", ld["hello"]);
+            Assert.Single(ld);
+            Assert.Equal("hello", ld.MostRecent.Key);
+            Assert.Equal("hello", ld.LeastRecent.Key);
+
             Assert.Throws<KeyNotFoundException>(() => ld["foo"]);
+
+            bool removed = ld.Remove("hello");
+            Assert.True(removed);
+            Assert.Throws<KeyNotFoundException>(() => ld["hello"]);
+            Assert.Empty(ld);
+            Assert.Throws<InvalidOperationException>(() => ld.MostRecent);
+            Assert.Throws<InvalidOperationException>(() => ld.LeastRecent);
         }
 
         [Fact]

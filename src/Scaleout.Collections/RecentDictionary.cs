@@ -318,15 +318,16 @@ namespace Scaleout.Collections
             {
                 // unhook from current position
                 node.LruPrevious.LruNext = node.LruNext;
-                if (node.LruNext == null)
-                {
-                    // we're at the tail.
-                    _lruTail = node.LruPrevious;
-                }
-                else
-                {
-                    node.LruNext.LruPrevious = node.LruPrevious;
-                }
+            }
+
+            if (node.LruNext == null)
+            {
+                // we're at the tail.
+                _lruTail = node.LruPrevious;
+            }
+            else
+            {
+                node.LruNext.LruPrevious = node.LruPrevious;
             }
         }
 
@@ -384,23 +385,11 @@ namespace Scaleout.Collections
                 Node nodeToRemove;
                 if (_evictMode == RecentDictionaryEvictionMode.LRU)
                 {
-                    // remove the least recently used
                     nodeToRemove = _lruTail;
-                    if (nodeToRemove.LruPrevious != null)
-                    {
-                        nodeToRemove.LruPrevious.LruNext = null;
-                        _lruTail = nodeToRemove.LruPrevious;
-                    }
                 }
                 else
                 {
-                    // remove the most recently used
                     nodeToRemove = _lruHead;
-                    if (nodeToRemove.LruNext != null)
-                    {
-                        nodeToRemove.LruNext.LruPrevious = null;
-                        _lruHead = nodeToRemove.LruNext;
-                    }
                 }
 
                 // There's a small chance the bucket's chain will be changed by the
@@ -410,6 +399,7 @@ namespace Scaleout.Collections
                 bool reacquireBucketTail = (nodeToRemove == node);
 
                 // Do the eviction:
+                RemoveFromLru(nodeToRemove);
                 RemoveNode(nodeToRemove, nodeToRemove.HashCode & _bucketMask);
 
                 if (reacquireBucketTail)
