@@ -402,17 +402,25 @@ namespace Scaleout.Collections
                         _lruHead = nodeToRemove.LruNext;
                     }
                 }
+
+                // There's a small chance the bucket's chain will be changed by the
+                // RemoveNode call below (specifically, we'd get into trouble if `nodeToRemove`
+                // just happens to be `node`). Note whether this is the case so we can
+                // traverse the chain again.
+                bool reacquireBucketTail = (nodeToRemove == node);
+
+                // Do the eviction:
                 RemoveNode(nodeToRemove, nodeToRemove.HashCode & _bucketMask);
 
-                // Reacquire the end of the new node's bucket, since there's a small
-                // chance the bucket's chain was changed by the RemoveNode call above (specifically,
-                // we'd be in trouble if `nodeToRemove` just happens to be `node`).
-                node = _buckets[bucketIndex];
-                if (node != null)
+                if (reacquireBucketTail)
                 {
-                    while (node.Next != null)
+                    node = _buckets[bucketIndex];
+                    if (node != null)
                     {
-                        node = node.Next;
+                        while (node.Next != null)
+                        {
+                            node = node.Next;
+                        }
                     }
                 }
             }

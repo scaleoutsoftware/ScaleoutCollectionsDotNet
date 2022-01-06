@@ -64,15 +64,82 @@ namespace UnitTests
         public void SetAndMaintainCountKnownBucketCollision()
         {
             var ld = new RecentDictionary<int, int>(RecentDictionaryEvictionMode.LRU);
+            Assert.Equal(8, ld.Capacity);
 
             for (int i = 0; i < 3; i++)
                 ld[i] = i;
 
+            // assuming initial bucket capacity of 8, this will
+            // collide in bucket 0, which also contains the LRU item:
             ld.SetAndMaintainCount(8, 42);
             Assert.Equal(3, ld.Count);
             Assert.True(ld.ContainsKey(1));
             Assert.True(ld.ContainsKey(2));
             Assert.True(ld.ContainsKey(8));
+        }
+
+        [Fact]
+        public void SetAndMaintainCountKnownBucketCollision2()
+        {
+            var ld = new RecentDictionary<int, int>(RecentDictionaryEvictionMode.LRU);
+            Assert.Equal(8, ld.Capacity);
+
+            // assuming initial bucket capacity of 8, these will
+            // pile into bucket 0:
+            ld.Add(0, 0);
+            ld.Add(8, 8);
+            ld.Add(16, 16);
+            ld.Add(24, 24);
+
+            // reverse the order in the LRU list
+            ld.TryGetValue(16, out int a);
+            ld.TryGetValue(8, out int b);
+            ld.TryGetValue(0, out int c);
+            Assert.Equal(24, ld.LeastRecent.Key);
+            Assert.Equal(0, ld.MostRecent.Key);
+
+            // Set/evict:
+            ld.SetAndMaintainCount(32, 32);
+
+            Assert.Equal(4, ld.Count);
+            Assert.True(ld.ContainsKey(0));
+            Assert.True(ld.ContainsKey(8));
+            Assert.True(ld.ContainsKey(16));
+            Assert.False(ld.ContainsKey(24)); // should have been evicted
+            Assert.True(ld.ContainsKey(32));
+            Assert.Equal(16, ld.LeastRecent.Key);
+            Assert.Equal(32, ld.MostRecent.Key);
+        }
+
+        [Fact]
+        public void SetAndMaintainCountKnownBucketCollision3()
+        {
+            var ld = new RecentDictionary<int, int>(RecentDictionaryEvictionMode.LRU);
+            Assert.Equal(8, ld.Capacity);
+
+            // assuming initial bucket capacity of 8, these will
+            // pile into bucket 0:
+            ld.Add(0, 0);
+            ld.Add(8, 8);
+            ld.Add(16, 16);
+            ld.Add(24, 24);
+
+            // Change the order in the LRU list
+            ld.TryGetValue(0, out int c);
+            Assert.Equal(8, ld.LeastRecent.Key);
+            Assert.Equal(0, ld.MostRecent.Key);
+
+            // Set/evict:
+            ld.SetAndMaintainCount(32, 32);
+
+            Assert.Equal(4, ld.Count);
+            Assert.True(ld.ContainsKey(0));
+            Assert.False(ld.ContainsKey(8)); // should have been evicted
+            Assert.True(ld.ContainsKey(16));
+            Assert.True(ld.ContainsKey(24)); 
+            Assert.True(ld.ContainsKey(32));
+            Assert.Equal(16, ld.LeastRecent.Key);
+            Assert.Equal(32, ld.MostRecent.Key);
         }
 
         [Fact]
