@@ -13,6 +13,13 @@
     <description>A library of .NET dictionaries that are useful building blocks for in-memory caches with various eviction strategies (LRU and Random, primarily).</description>
     <copyright>Copyright (C), 2022 by ScaleOut Software, Inc.</copyright>
     <tags>LRU Random eviction cache ordered dictionary</tags>
+	<dependencies>
+      <group targetFramework="net45">
+      </group>
+    
+      <group targetFramework="netstandard2.0">
+      </group>
+    </dependencies>
   </metadata>
   <files>
     <!-- Cross-platform -->
